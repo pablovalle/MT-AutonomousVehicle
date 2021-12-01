@@ -1,14 +1,17 @@
 # Autonomous-vehicle
 
-This repository shares the experiments used in our "Titulo" paper for replicability purposes:
+This repository shares the experiments used in the "Performance-Driven Metamorphic Testing ofCyber-Physical Systems" paper for replicability purposes:
 
-(1) The "model" folder provides a folder "ExperimentalMutants" which includes the mutants used in this evaluation
+## Files
+"METAMORPHIC_TESTING_EXPERIMENT_MAIN.m" is the main script to execute the experiments
+### Directory structure
+* The "ExperimentalMutants" includes the mutants used in this evaluation
+* The "functions" folder includes the functions needed to perform the execution
+* The "data" folder includes the data needed to run the experiments
 
-(2) The "model" folder provides a folder "functions" which includes the functions needed to perform the execution
+## Requirements
+The requirements to execute the experiments can be found in the following file:
 
-(3) The "model" folder provides a folder "data" which includes the data needed to run the experiments
+https://github.com/mathworks/vehicle-pure-pursuit/blob/a90aa52bd80676ae54b87e659d86901c5ef0f09d/README.md
 
-(4) The "model" folder provides a file to execute test cases (METAMORPHIC_TESTING_EXPERIMENT_MAIN.m)
-
-The requirements to execute the experiments can be found in the following web page:
-https://github.com/mathworks/vehicle-pure-pursuit
+Under the **3_USCity** section.
