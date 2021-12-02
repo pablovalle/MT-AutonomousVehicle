@@ -37,10 +37,8 @@ Mutant_20_of_purePursuitUSCity;
 
 ResultsTable(1,:)=table("aa","aa",0,0,0,0,0,0,0,0,0,0,0,0);
 ResultsTable.Properties.VariableNames={'Model','MRIP','Test Case','# of Waypoints','Error distance (Source)','Error distance (FollowUp)','Time to destination (Source)','Time to destination (FollowUp)','Balancing (Source)','Balancing (FollowUp)','Distance to the car Follow up','Distance to the car Source','Source exec time','Follow up exec time'};
-MRIP={@(a) generateFollowUpMRIP1_1(a),@(a) generateFollowUpMRIP1_2(a),@(a) generateFollowUpMRIP1_3(a),@(a) generateFollowUpMRIP2(a),@(a) generateFollowUpMRIP3(a),@(a) generateFollowUpMRIP4(a)};%,...
-    %@(a) generateFollowUpMRIP4(a),@(a) generateFollowUpMRIP5(a),@(a) generateFollowUpMRIP6(a),...
-    %@(a) generateFollowUpMRIP7(a),@(a) generateFollowUpMRIP8(a)};
-MRIP_Names=["MRIP1_1","MRIP1_2","MRIP1_3","MRIP2","MRIP3", "MRIP4"];%,"MRIP4","MRIP5","MRIP6","MRIP7","MRIP8"];
+MRIP={@(a) generateFollowUpMRIP1_1(a),@(a) generateFollowUpMRIP1_2(a),@(a) generateFollowUpMRIP1_3(a),@(a) generateFollowUpMRIP2(a),@(a) generateFollowUpMRIP3(a),@(a) generateFollowUpMRIP4(a)};
+MRIP_Names=["MRIP1_1","MRIP1_2","MRIP1_3","MRIP2","MRIP3", "MRIP4"];
 Mutants=["purePursuitUSCity","Mutant_1_of_purePursuitUSCity","Mutant_2_of_purePursuitUSCity","Mutant_3_of_purePursuitUSCity","Mutant_4_of_purePursuitUSCity","Mutant_5_of_purePursuitUSCity","Mutant_6_of_purePursuitUSCity","Mutant_7_of_purePursuitUSCity","Mutant_8_of_purePursuitUSCity","Mutant_9_of_purePursuitUSCity","Mutant_10_of_purePursuitUSCity",...
     "Mutant_11_of_purePursuitUSCity","Mutant_12_of_purePursuitUSCity","Mutant_13_of_purePursuitUSCity","Mutant_14_of_purePursuitUSCity","Mutant_15_of_purePursuitUSCity","Mutant_16_of_purePursuitUSCity","Mutant_17_of_purePursuitUSCity","Mutant_18_of_purePursuitUSCity","Mutant_19_of_purePursuitUSCity","Mutant_20_of_purePursuitUSCity"];
 %% Test Execution
@@ -100,7 +98,6 @@ function testCase = generateFollowUpMRIP3(sourceTestCase)
     testCase.xRef = flip(testCase.xRef);
     testCase.yRef = flip(testCase.yRef);
     testCase.refPose=flip(testCase.refPose);
-    a=0;
 end
 
 function testCase = generateFollowUpMRIP2(sourceTestCase)
@@ -122,6 +119,7 @@ function testCase = generateFollowUpMRIP2(sourceTestCase)
 end
 
 function testCase=generateFollowUpMRIP4(sourceTestCase)
+%MRIP: Remove 20% of the guidance points
     testCase = sourceTestCase;
     toDelete=randi([2,size(sourceTestCase.xRef,1)-1],round(size(sourceTestCase.xRef,1)*0.2),1);
     for j=1: size(toDelete,1)
@@ -133,67 +131,4 @@ function testCase=generateFollowUpMRIP4(sourceTestCase)
     refPose(:,1)=testCase.xRef(:,1);
     refPose(:,2)=testCase.yRef(:,1);
     testCase.refPose=refPose;
-end
-
-function testCase = generateFollowUpMRIP4_1(sourceTestCase)
-    %MRIP: increment lookahead distance and bicycle length
-    testCase = sourceTestCase;
-    testCase.l = testCase.l +5;
-    testCase.ld=testCase.ld +5;
-end
-
-function testCase = generateFollowUpMRIP5(sourceTestCase)
-    %MRIP: increment minimal speed
-    testCase = sourceTestCase;
-    testCase.minimalSpeed = testCase.minimalSpeed +4;
-    if testCase.minimalSpeed >=testCase.nominalSpeed
-        testCase.minimalSpeed =testCase.nominalSpeed-1.5;
-    end
-end
-
-function testCase = generateFollowUpMRIP6(sourceTestCase)
-    %MRIP: incrrement last point speed reduction distance
-    testCase = sourceTestCase;
-    testCase.approximationReductionGain = testCase.approximationReductionGain - 1;
-    if testCase.approximationReductionGain <=0.2
-        testCase.approximationReductionGain=0.2;
-    end
-end
-function testCase = generateFollowUpMRIP7(sourceTestCase)
-    %MRIP: Generate vehicles outside of the vehicle's path
-
-    generateVehiclesOut(sourceTestCase);
-    load('vehiclesOut.mat');
-    testCase=sourceTestCase;
-    testCase.psi1=psi_1;
-    testCase.psi2=psi_2;
-    testCase.slopeX1=slope_x1;
-    testCase.slopeX2=slope_x2;
-    testCase.slopeY1=slope_y1;
-    testCase.slopeY2=slope_y2;
-    testCase.X1=x_1;
-    testCase.X2=x_2;
-    testCase.Y1=y_1;
-    testCase.Y2=y_2;
-    
-end
-
-function testCase = generateFollowUpMRIP8(sourceTestCase)
-    %MRIP: Scenario rotation
-    testCase=sourceTestCase;
-    createNewScenarioDeg(sourceTestCase.xRef,sourceTestCase.yRef,15);
-    load('USCityDeg.mat');
-    testCase.data=data;
-    testCase.refX=refX;
-    testCase.refY=refY;
-    testCase.refPose(:,1)=refX;
-    testCase.refPose(:,2)=-refY;
-    testCase.slopeX1=testCase.slopeX1*cosd(15)-testCase.slopeY1*sind(15);
-    testCase.slopeX2=testCase.slopeX2*cosd(15)-testCase.slopeY2*sind(15);
-    testCase.slopeY1=testCase.slopeX1*sind(15)+testCase.slopeY1*cosd(15);
-    testCase.slopeY2=testCase.slopeX2*sind(15)+testCase.slopeY2*cosd(15);
-    testCase.X1=testCase.X1*cosd(15)-testCase.Y1*sind(15);
-    testCase.X2=testCase.X2*cosd(15)-testCase.Y2*sind(15);
-    testCase.Y1=testCase.X1*sind(15)+testCase.Y1*cosd(15);
-    testCase.Y2=testCase.X2*sind(15)+testCase.Y2*cosd(15);
 end
