@@ -37,16 +37,15 @@ Mutant_20_of_purePursuitUSCity;
 
 ResultsTable(1,:)=table("aa","aa",0,0,0,0,0,0,0,0,0,0,0,0);
 ResultsTable.Properties.VariableNames={'Model','MRIP','Test Case','# of Waypoints','Error distance (Source)','Error distance (FollowUp)','Time to destination (Source)','Time to destination (FollowUp)','Balancing (Source)','Balancing (FollowUp)','Distance to the car Follow up','Distance to the car Source','Source exec time','Follow up exec time'};
-MRIP={@(a) generateFollowUpMRIP4(a),@(a) generateFollowUpMRIP1_1(a),@(a) generateFollowUpMRIP1_2(a),@(a) generateFollowUpMRIP1_3(a),@(a) generateFollowUpMRIP2(a),@(a) generateFollowUpMRIP3(a)};%,...
+MRIP={@(a) generateFollowUpMRIP1_1(a),@(a) generateFollowUpMRIP1_2(a),@(a) generateFollowUpMRIP1_3(a),@(a) generateFollowUpMRIP2(a),@(a) generateFollowUpMRIP3(a),@(a) generateFollowUpMRIP4(a)};%,...
     %@(a) generateFollowUpMRIP4(a),@(a) generateFollowUpMRIP5(a),@(a) generateFollowUpMRIP6(a),...
     %@(a) generateFollowUpMRIP7(a),@(a) generateFollowUpMRIP8(a)};
-MRIP_Names=["MRIP1_4","MRIP1_2","MRIP1_3","MRIP2","MRIP3"];%,"MRIP4","MRIP5","MRIP6","MRIP7","MRIP8"];
+MRIP_Names=["MRIP1_1","MRIP1_2","MRIP1_3","MRIP2","MRIP3", "MRIP4"];%,"MRIP4","MRIP5","MRIP6","MRIP7","MRIP8"];
 Mutants=["purePursuitUSCity","Mutant_1_of_purePursuitUSCity","Mutant_2_of_purePursuitUSCity","Mutant_3_of_purePursuitUSCity","Mutant_4_of_purePursuitUSCity","Mutant_5_of_purePursuitUSCity","Mutant_6_of_purePursuitUSCity","Mutant_7_of_purePursuitUSCity","Mutant_8_of_purePursuitUSCity","Mutant_9_of_purePursuitUSCity","Mutant_10_of_purePursuitUSCity",...
     "Mutant_11_of_purePursuitUSCity","Mutant_12_of_purePursuitUSCity","Mutant_13_of_purePursuitUSCity","Mutant_14_of_purePursuitUSCity","Mutant_15_of_purePursuitUSCity","Mutant_16_of_purePursuitUSCity","Mutant_17_of_purePursuitUSCity","Mutant_18_of_purePursuitUSCity","Mutant_19_of_purePursuitUSCity","Mutant_20_of_purePursuitUSCity"];
 %% Test Execution
 for i=0:size(Mutants,2)-1
-    j=0;
-    %for j=0:size(MRIP,2)-1
+    for j=0:size(MRIP,2)-1
         for ii=1:nTest
 
            tic;
@@ -75,13 +74,13 @@ for i=0:size(Mutants,2)-1
            t=datetime('now');
            disp(['Execution moment=  ' datestr(t)]);
         end
-    %end
-    writetable(ResultsTable,'Experiment_Results_MRIP4.xlsx');
+    end
+    writetable(ResultsTable,'Experiment_Results.xlsx');
 end
 
 
 
-writetable(ResultsTable,'Experiment_Results_MRIP4.xlsx');
+writetable(ResultsTable,'Experiment_Results.xlsx');
 
 
 function testCase = generateFollowUpMRIP1_1(sourceTestCase)
