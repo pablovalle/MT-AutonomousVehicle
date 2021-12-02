@@ -24,20 +24,33 @@ end
 disp('Initializing MRIPs and Mutants...')
 MRIP={@(a) generateFollowUpMRIP1_1(a),@(a) generateFollowUpMRIP1_2(a),@(a) generateFollowUpMRIP1_3(a),@(a) generateFollowUpMRIP2(a),@(a) generateFollowUpMRIP3(a),@(a) generateFollowUpMRIP4(a)};
 MRIP_Names=["MRIP1_1","MRIP1_2","MRIP1_3","MRIP2","MRIP3", "MRIP4"];
+MRIP_Count = size(MRIP,2);
 Mutants=["purePursuitUSCity","Mutant_1_of_purePursuitUSCity","Mutant_2_of_purePursuitUSCity","Mutant_3_of_purePursuitUSCity","Mutant_4_of_purePursuitUSCity","Mutant_5_of_purePursuitUSCity","Mutant_6_of_purePursuitUSCity","Mutant_7_of_purePursuitUSCity","Mutant_8_of_purePursuitUSCity","Mutant_9_of_purePursuitUSCity","Mutant_10_of_purePursuitUSCity",...
     "Mutant_11_of_purePursuitUSCity","Mutant_12_of_purePursuitUSCity","Mutant_13_of_purePursuitUSCity","Mutant_14_of_purePursuitUSCity","Mutant_15_of_purePursuitUSCity","Mutant_16_of_purePursuitUSCity","Mutant_17_of_purePursuitUSCity","Mutant_18_of_purePursuitUSCity","Mutant_19_of_purePursuitUSCity","Mutant_20_of_purePursuitUSCity"];
+Mutants_Count = size(Mutants,2);
 %% Init Results table
 ResultsTableFile = 'Experiment_Results.csv';
 ResultsTableVariableNames={'Model','MRIP','Test Case','# of Waypoints','Error distance (Source)','Error distance (FollowUp)','Time to destination (Source)','Time to destination (FollowUp)','Balancing (Source)','Balancing (FollowUp)','Distance to the car Follow up','Distance to the car Source','Source exec time','Follow up exec time'};
-ResultsTableCreated = false;
+ResultsTableWrittenBefore = max(fcountlines(ResultsTableFile) - 1, 0);
+disp(['ResultsTableWrittenBefore = ' num2str(ResultsTableWrittenBefore)]);
+ResultsTableCreated = ResultsTableWrittenBefore > 0;
 %% Test Execution
 disp('Executing test cases...')
-for i=0:size(Mutants,2)-1
+for i=0:Mutants_Count-1
+    if ResultsTableWrittenBefore >= (i+1) * nTest * MRIP_Count
+        continue;
+    end
     for ii=1:nTest
+        if ResultsTableWrittenBefore >= (i+1) * ii * MRIP_Count
+            continue;
+        end
         tic;
         QoSMeasure = executeTestCase(testSuite{ii},Mutants(1,i+1));
         testDurSource = toc;
-        for j=0:size(MRIP,2)-1
+        for j=0:MRIP_Count-1
+            if ResultsTableWrittenBefore >= (i+1) * (ii-1) * MRIP_Count + (j+1)
+                continue;
+            end
            tic;
            QoSMeasureFollowUp = executeTestCase(MRIP{j+1}(testSuite{ii}),Mutants(1,i+1));
            testDurFollowUp = toc;
