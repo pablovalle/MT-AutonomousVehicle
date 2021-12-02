@@ -45,19 +45,16 @@ Mutants=["purePursuitUSCity","Mutant_1_of_purePursuitUSCity","Mutant_2_of_purePu
     "Mutant_11_of_purePursuitUSCity","Mutant_12_of_purePursuitUSCity","Mutant_13_of_purePursuitUSCity","Mutant_14_of_purePursuitUSCity","Mutant_15_of_purePursuitUSCity","Mutant_16_of_purePursuitUSCity","Mutant_17_of_purePursuitUSCity","Mutant_18_of_purePursuitUSCity","Mutant_19_of_purePursuitUSCity","Mutant_20_of_purePursuitUSCity"];
 %% Test Execution
 for i=0:size(Mutants,2)-1
-    for j=0:size(MRIP,2)-1
-        for ii=1:nTest
-
+    for ii=1:nTest
+        tic;
+        QoSMeasure = executeTestCase(testSuite{ii},Mutants(1,i+1));
+        testDurSource = toc;
+        for j=0:size(MRIP,2)-1
            tic;
            QoSMeasureFollowUp = executeTestCase(MRIP{j+1}(testSuite{ii}),Mutants(1,i+1));
            testDurFollowUp = toc;
-           
-           tic;
-           QoSMeasure = executeTestCase(testSuite{ii},Mutants(1,i+1));
-           testDurSource = toc;
-
            num=ii+(nTest*j)+i*nTest*size(MRIP,2);
-           ResultsTable(num,:)=table(Mutants(1,i+1),MRIP_Names(1,j+1),ii,size(testSuite{ii}.xRef,1),QoSMeasure.errorDistance,QoSMeasureFollowUp.errorDistance,QoSMeasure.timeToDestination,QoSMeasureFollowUp.timeToDestination,QoSMeasure.balancing,QoSMeasureFollowUp.balancing,QoSMeasureFollowUp.Distance,QoSMeasure.Distance,testDurSource,testDurFollowUp);   
+           ResultsTable(num,:)=table(Mutants(1,i+1),MRIP_Names(1,j+1),ii,size(testSSuite{ii}.xRef,1),QoSMeasure.errorDistance,QoSMeasureFollowUp.errorDistance,QoSMeasure.timeToDestination,QoSMeasureFollowUp.timeToDestination,QoSMeasure.balancing,QoSMeasureFollowUp.balancing,QoSMeasureFollowUp.Distance,QoSMeasure.Distance,testDurSource,testDurFollowUp);   
            disp('========================================')
            disp(['Test case = ' num2str(ii)])
            disp(['MRIP = ' num2str(j)]);
@@ -79,16 +76,13 @@ for i=0:size(Mutants,2)-1
 end
 
 
-
-writetable(ResultsTable,'Experiment_Results.xlsx');
-
-
 function testCase = generateFollowUpMRIP1_1(sourceTestCase)
     %MRIP: increment nominal speed
     testCase = sourceTestCase;
     testCase.nominalSpeed = testCase.nominalSpeed *1.1;
     
 end
+
 function testCase = generateFollowUpMRIP1_2(sourceTestCase)
     %MRIP: increment nominal speed
     testCase = sourceTestCase;
@@ -126,6 +120,7 @@ function testCase = generateFollowUpMRIP2(sourceTestCase)
     testCase.Y2=y_2;
     
 end
+
 function testCase=generateFollowUpMRIP4(sourceTestCase)
     testCase = sourceTestCase;
     toDelete=randi([2,size(sourceTestCase.xRef,1)-1],round(size(sourceTestCase.xRef,1)*0.2),1);
@@ -139,6 +134,7 @@ function testCase=generateFollowUpMRIP4(sourceTestCase)
     refPose(:,2)=testCase.yRef(:,1);
     testCase.refPose=refPose;
 end
+
 function testCase = generateFollowUpMRIP4_1(sourceTestCase)
     %MRIP: increment lookahead distance and bicycle length
     testCase = sourceTestCase;
