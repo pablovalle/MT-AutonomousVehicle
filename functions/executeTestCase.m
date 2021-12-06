@@ -98,7 +98,9 @@ function QoSMeasure = executeTestCase(testCase, SUT)
     assignin('base','angVelGain',angVelGainLocal);
     assignin('base','approximationReductionGain',approximationReductionGainLocal);
 
+    w = warning('off','all');
     simResults = sim(SUT);
+    warning(w);
     QoSMeasure.errorDistance = simResults.errorDistance;
     QoSMeasure.balancing = simResults.balancing;
     QoSMeasure.timeToDestination = simResults.timeToDestination;
