@@ -7,19 +7,6 @@ addpath('data');
 addpath('functions');
 addpath('ExperimentalMutants');
 setUpPurePursuitUSCity;
-%% Test generation
-disp('Generating source test cases...')
-rng(1);
-if isfile("testSuite.mat")
-    load('testSuite.mat');
-    rng(rngstate);
-    nTest = size(testSuite, 2);
-else
-    nTest = 100; %Number of test cases to generate
-    testSuite = generateTestCasesRandomly(nTest);
-    rngstate = rng();
-    save('testSuite.mat', 'testSuite', 'rngstate');
-end
 %% Enumerate MRIPs and mutants
 disp('Initializing MRIPs and Mutants...')
 MRIP={@(a) generateFollowUpMRIP1_1(a),@(a) generateFollowUpMRIP1_2(a),@(a) generateFollowUpMRIP1_3(a),@(a) generateFollowUpMRIP2(a),@(a) generateFollowUpMRIP3(a),@(a) generateFollowUpMRIP4(a)};
@@ -30,54 +17,77 @@ Mutants=["purePursuitUSCity","Mutant_1_of_purePursuitUSCity","Mutant_2_of_purePu
 Mutants_Count = size(Mutants,2);
 %% Init Results table
 ResultsTableFile = 'Experiment_Results.csv';
+ResultsTableFile2 = 'Experiment_Results.xlsx';
 ResultsTableVariableNames={'Model','MRIP','Test Case','# of Waypoints','Error distance (Source)','Error distance (FollowUp)','Time to destination (Source)','Time to destination (FollowUp)','Balancing (Source)','Balancing (FollowUp)','Distance to the car Follow up','Distance to the car Source','Source exec time','Follow up exec time'};
-ResultsTableWrittenBefore = max(fcountlines(ResultsTableFile) - 1, 0);
-disp(['ResultsTableWrittenBefore = ' num2str(ResultsTableWrittenBefore)]);
-ResultsTableCreated = ResultsTableWrittenBefore > 0;
+%ResultsTableWrittenBefore = max(fcountlines(ResultsTableFile) - 1, 0);
+%disp(['ResultsTableWrittenBefore = ' num2str(ResultsTableWrittenBefore)]);
+ResultsTableCreated = false;
+%% Init state
+if isfile("experimentProgress.mat")
+    disp('Loading state from experimentProgress.mat...')
+    load('experimentProgress.mat');
+    rng(rngstate);
+    nTest = size(testSuite, 2);
+    ResultsTableCreated = mutant_index + mrip_index + test_index > 1;
+else
+    %% Test generation
+    rng(1);
+    disp('Generating source test cases...')
+    nTest = 100; %Number of test cases to generate
+    testSuite = generateTestCasesRandomly(nTest);
+    mutant_index = 0;
+    mrip_index = 0;
+    test_index = 1;
+end
 %% Test Execution
 disp('Executing test cases...')
-for i=0:Mutants_Count-1
-    if ResultsTableWrittenBefore >= (i+1) * nTest * MRIP_Count
-        continue;
-    end
-    for ii=1:nTest
-        if ResultsTableWrittenBefore >= (i+1) * ii * MRIP_Count
-            continue;
-        end
-        tic;
-        QoSMeasure = executeTestCase(testSuite{ii},Mutants(1,i+1));
-        testDurSource = toc;
-        for j=0:MRIP_Count-1
-            if ResultsTableWrittenBefore >= (i+1) * (ii-1) * MRIP_Count + (j+1)
-                continue;
-            end
+for i=mutant_index:Mutants_Count-1
+    for j=mrip_index:MRIP_Count-1
+        for ii=test_index:nTest
+           % Store experiment progress
+           mutant_index = i;
+           mrip_index = j;
+           test_index = ii;
+           rngstate = rng();
+           save('experimentProgress.mat', 'testSuite', 'rngstate', 'mutant_index', 'mrip_index', 'test_index');
+           % Display current test execution
+           disp('========================================')
+           disp(['Mutant = ' num2str(i+1) '/' num2str(Mutants_Count)]);
+           disp(['MRIP = ' num2str(j+1) '/' num2str(MRIP_Count)]);
+           disp(['Test case = ' num2str(ii) '/' num2str(nTest)])
+           %disp(['Number of Waypoints = ' num2str(size(xRef,1))]);
+           %disp(['Error distance(Source) = ' num2str(QoSMeasure.errorDistance)]); %a higher nominal speed shall have a higher error distance
+           %disp(['Error distance(FollowUP) = ' num2str(QoSMeasureFollowUp.errorDistance )]); %a higher nominal speed shall have a higher error distance
+           %disp(['Time to destination (Source) = ', num2str(QoSMeasure.timeToDestination)]); % a higher nominal speed and higher minimal speed shall have a lower time to destination
+           %disp(['Time to destination (FollowUp) = ', num2str(QoSMeasureFollowUp.timeToDestination)]); % a higher nominal speed and higher minimal speed shall have a lower time to destination   
+           %disp(['Balancing (Source) = ', num2str(QoSMeasure.balancing)]); % a higher norminal speed shall have a higher balancing || a higher bicycle length and lookahead distance shall have a higher balancing
+           %disp(['Balancing (FollowUp) = ', num2str(QoSMeasureFollowUp.balancing )]); % a higher norminal speed shall have a higher balancing || a higher bicycle length and lookahead distance shall have a higher balancing
+           %disp(['Execution time (Source) = ' num2str(testDurSource)]); 
+           %disp(['Execution time (FollowUP) = ' num2str(testDurFollowUp)]);
+           t=datetime('now');
+           disp(['Execution moment=  ' datestr(t)]);
+           % Execute source test case
+           if j == 0 || exist('QoSMeasure','var') ~= 1
+              tic;
+              QoSMeasure = executeTestCase(testSuite{ii},Mutants(1,i+1));
+              testDurSource = toc;
+           end
+           % Execute follow-up test case
            tic;
            QoSMeasureFollowUp = executeTestCase(MRIP{j+1}(testSuite{ii}),Mutants(1,i+1));
            testDurFollowUp = toc;
            num=ii+(nTest*j)+i*nTest*size(MRIP,2);
            ResultsTable=table(Mutants(1,i+1),MRIP_Names(1,j+1),ii,size(testSuite{ii}.xRef,1),QoSMeasure.errorDistance,QoSMeasureFollowUp.errorDistance,QoSMeasure.timeToDestination,QoSMeasureFollowUp.timeToDestination,QoSMeasure.balancing,QoSMeasureFollowUp.balancing,QoSMeasureFollowUp.Distance,QoSMeasure.Distance,testDurSource,testDurFollowUp);   
+           % Write results table
            if ResultsTableCreated
             writetable(ResultsTable, ResultsTableFile, "WriteMode", "append", "WriteVariableNames", false);
+            writetable(ResultsTable, ResultsTableFile2, "WriteMode", "append", "WriteVariableNames", false);
            else
             ResultsTable.Properties.VariableNames=ResultsTableVariableNames;
             writetable(ResultsTable, ResultsTableFile);
+            writetable(ResultsTable, ResultsTableFile2);
             ResultsTableCreated = true;
            end
-           disp('========================================')
-           disp(['Test case = ' num2str(ii)])
-           disp(['MRIP = ' num2str(j)]);
-           disp(['Mutant = ' num2str(i)]);
-           disp(['Number of Waypoints = ' num2str(size(xRef,1))]);
-           disp(['Error distance(Source) = ' num2str(QoSMeasure.errorDistance)]); %a higher nominal speed shall have a higher error distance
-           disp(['Error distance(FollowUP) = ' num2str(QoSMeasureFollowUp.errorDistance )]); %a higher nominal speed shall have a higher error distance
-           disp(['Time to destination (Source) = ', num2str(QoSMeasure.timeToDestination)]); % a higher nominal speed and higher minimal speed shall have a lower time to destination
-           disp(['Time to destination (FollowUp) = ', num2str(QoSMeasureFollowUp.timeToDestination)]); % a higher nominal speed and higher minimal speed shall have a lower time to destination   
-           disp(['Balancing (Source) = ', num2str(QoSMeasure.balancing)]); % a higher norminal speed shall have a higher balancing || a higher bicycle length and lookahead distance shall have a higher balancing
-           disp(['Balancing (FollowUp) = ', num2str(QoSMeasureFollowUp.balancing )]); % a higher norminal speed shall have a higher balancing || a higher bicycle length and lookahead distance shall have a higher balancing
-           disp(['Execution time (Source) = ' num2str(testDurSource)]); 
-           disp(['Execution time (FollowUP) = ' num2str(testDurFollowUp)]);
-           t=datetime('now');
-           disp(['Execution moment=  ' datestr(t)]);
         end
     end
     %writetable(ResultsTable,'Experiment_Results.xlsx');
