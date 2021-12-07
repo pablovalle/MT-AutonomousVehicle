@@ -1,10 +1,10 @@
 import pandas as pd
-import xlsxwriter
 import math
 
 variable_range_time=1
 variable_range_balancing=0.15
-data= pd.read_excel("Experiment_Results.xlsx")
+data = pd.read_csv("Experiment_Results.csv")
+#data= pd.read_excel("Experiment_Results.xlsx", engine='openpyxl')
 data= data.drop(['# of Waypoints','Error distance (Source)', 'Error distance (FollowUp)',
                  'Distance to the car Follow up', 'Distance to the car Source','Source exec time',
                  'Follow up exec time'  ],axis=1)
@@ -55,11 +55,11 @@ for i in range(0,len(data)):
     elif data.loc[i,"MRIP"]=="MRIP4":
         MRIP_4_Data.append(data.loc[i,:])
 
-print("LOOPS")
-#MRIP 1.1 -> TD_F<=TD_S /  TO_F>=TO_S
+print("Evaluating")
 
+#MRIP 1.1 -> TD_F<=TD_S /  TO_F>=TO_S
+print('  MRIP1.1')
 for i in range(0,len(MRIP_1_1_Data)):
-    print(i)
     if MRIP_1_1_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_1_1_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
@@ -83,8 +83,8 @@ for i in range(0,len(MRIP_1_1_Data)):
         result_1_1_FDR=result_1_1_FDR.append({'Model': MRIP_1_1_Data[i].loc['Model'],'MRIP':MRIP_1_1_Data[i].loc['MRIP'],'TestCase':MRIP_1_1_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
 
 #MRIP 1.2-> TD_F<=TD_S / TO_F>=TO_S
+print('  MRIP1.2')
 for i in range(0,len(MRIP_1_2_Data)):
-    print(i)
     if MRIP_1_2_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_1_2_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
@@ -110,8 +110,8 @@ for i in range(0,len(MRIP_1_2_Data)):
 
     
 #MRIP 1.3-> TD_F<=TD_S / TO_F>=TO_S
+print('  MRIP1.3')
 for i in range(0,len(MRIP_1_3_Data)):
-    print(i)
     if MRIP_1_3_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_1_3_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
@@ -137,8 +137,8 @@ for i in range(0,len(MRIP_1_3_Data)):
 
    
 #MRIP 3 TD_F==TD_S / TO_F==TO_S
+print('  MRIP3')
 for i in range(0,len(MRIP_3_Data)):
-    print(i)
     if MRIP_3_Data[i].loc['Time to destination (Source)']*1.15>=MRIP_3_Data[i].loc['Time to destination (FollowUp)'] and MRIP_3_Data[i].loc['Time to destination (Source)']*0.85<=MRIP_3_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
@@ -164,8 +164,8 @@ for i in range(0,len(MRIP_3_Data)):
 
    
 #MRIP 4 TD_F==TD_S / TO_F==TO_S
+print('  MRIP4')
 for i in range(0,len(MRIP_4_Data)):
-    print(i)
     if MRIP_4_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_4_Data[i].loc['Time to destination (FollowUp)'] and MRIP_4_Data[i].loc['Time to destination (Source)']*0.90<=MRIP_4_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
@@ -191,9 +191,8 @@ for i in range(0,len(MRIP_4_Data)):
 
    
 #MRIP 2 TD_F>=TD_S / TO_F==TO_S
-
+print('  MRIP2')
 for i in range(0,len(MRIP_2_Data)):
-    print(i)
     if MRIP_2_Data[i].loc['Time to destination (FollowUp)']>=MRIP_2_Data[i].loc['Time to destination (Source)']*0.90:
        td="PASS"
     else:
@@ -217,7 +216,7 @@ for i in range(0,len(MRIP_2_Data)):
             to_fdr="PASS"
         result_2_FDR=result_2_FDR.append({'Model': MRIP_2_Data[i].loc['Model'],'MRIP':MRIP_2_Data[i].loc['MRIP'],'TestCase':MRIP_2_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
 
-
+print('Compiling results')
 
 
 def changeVerdict(result, testCase, VerdictType):
@@ -339,7 +338,7 @@ resutl_4_FailuresTd.insert(0,"MRIP4")
 resutl_4_PosFailuresTo.insert(0,"MRIP4")
 resutl_4_PosFailuresTd.insert(0,"MRIP4")
 
-file='Results.xlsx'
+file='Evaluation.xlsx'
 names=["", "Original", "Mutant1", "Mutant2", "Mutant3", "Mutant4", "Mutant5", "Mutant6", "Mutant7"
        , "Mutant8", "Mutant9", "Mutant10", "Mutant11", "Mutant12", "Mutant13", "Mutant14", "Mutant15"
        , "Mutant16", "Mutant17", "Mutant18", "Mutant19", "Mutant20"]
