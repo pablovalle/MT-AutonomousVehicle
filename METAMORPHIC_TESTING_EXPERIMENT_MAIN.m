@@ -55,7 +55,7 @@ for i=mutant_index:Mutants_Count-1
            end
            % Execute follow-up test case
            tic;
-           QoSMeasureFollowUp = executeTestCase(followupTestSuite{i+1, j+1, ii},Mutants(1,i+1));
+           QoSMeasureFollowUp = executeTestCase(followupTestSuite(i+1, j+1, ii),Mutants(1,i+1));
            testDurFollowUp = toc;
            num=ii+(nTest*j)+i*nTest*size(MRIP,2);
            ResultsTable=table(Mutants(1,i+1),MRIP_Names(1,j+1),ii,size(sourceTestSuite{ii}.xRef,1),QoSMeasure.errorDistance,QoSMeasureFollowUp.errorDistance,QoSMeasure.timeToDestination,QoSMeasureFollowUp.timeToDestination,QoSMeasure.balancing,QoSMeasureFollowUp.balancing,QoSMeasureFollowUp.Distance,QoSMeasure.Distance,testDurSource,testDurFollowUp);   
