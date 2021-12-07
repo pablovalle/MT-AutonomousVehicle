@@ -22,13 +22,14 @@ ResultsTableCreated = false;
 %% Init state
 load testSuite;
 nTest = size(sourceTestSuite, 2);
-if isfile("experimentProgress.mat")
-    disp('Loading state from experimentProgress.mat...')
-    load('experimentProgress.mat');
+if isfile("experimentProgress.csv")
+    disp('Loading state from experimentProgress.csv...')
+    load('experimentProgress.csv');
+    mutant_index = experimentProgress(1);
+    mrip_index = experimentProgress(2);
+    test_index = experimentProgress(3);
     ResultsTableCreated = mutant_index + mrip_index + test_index > 1;
 else
-    %% Test generation
-    disp('Generating source test cases...')
     mutant_index = 0;
     mrip_index = 0;
     test_index = 1;
@@ -39,10 +40,7 @@ for i=mutant_index:Mutants_Count-1
     for j=mrip_index:MRIP_Count-1
         for ii=test_index:nTest
            % Store experiment progress
-           mutant_index = i;
-           mrip_index = j;
-           test_index = ii;
-           save('experimentProgress.mat', 'mutant_index', 'mrip_index', 'test_index');
+           save('experimentProgress.csv', 'i', 'j', 'ii', '-ascii');
            % Display current test execution
            disp('========================================')
            disp(['Mutant = ' num2str(i+1) '/' num2str(Mutants_Count)]);
