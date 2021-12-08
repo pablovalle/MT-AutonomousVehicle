@@ -14,7 +14,7 @@ Mutants=["purePursuitUSCity","Mutant_1_of_purePursuitUSCity","Mutant_2_of_purePu
     "Mutant_11_of_purePursuitUSCity","Mutant_12_of_purePursuitUSCity","Mutant_13_of_purePursuitUSCity","Mutant_14_of_purePursuitUSCity","Mutant_15_of_purePursuitUSCity","Mutant_16_of_purePursuitUSCity","Mutant_17_of_purePursuitUSCity","Mutant_18_of_purePursuitUSCity","Mutant_19_of_purePursuitUSCity","Mutant_20_of_purePursuitUSCity"];
 Mutants_Count = size(Mutants,2);
 %% Init Results table
-ResultsTableFile = 'Experiment_Results.csv';
+ResultsTableFile = 'Experiment_Results.csv'; %'Experiment_Results.xlsx';
 ResultsTableVariableNames={'Model','MRIP','Test Case','# of Waypoints','Error distance (Source)','Error distance (FollowUp)','Time to destination (Source)','Time to destination (FollowUp)','Balancing (Source)','Balancing (FollowUp)','Distance to the car Follow up','Distance to the car Source','Source exec time','Follow up exec time'};
 %ResultsTableWrittenBefore = max(fcountlines(ResultsTableFile) - 1, 0);
 %disp(['ResultsTableWrittenBefore = ' num2str(ResultsTableWrittenBefore)]);

@@ -1,11 +1,27 @@
+#!/usr/bin/env python3
+
 import pandas as pd
 import math
 
+FILE_IN  = "Experiment_Results2.csv"
+FILE_OUT ='Evaluation_{sheet_name}.csv'
+
+FORMAT_IN = 'csv'
+if FILE_IN.endswith('.xlsx'):
+    FORMAT_IN = 'xlsx'
+FORMAT_OUT = 'csv'
+if FILE_OUT.endswith('.xlsx'):
+    FORMAT_OUT = 'xlsx'
+
 variable_range_time=1
 variable_range_balancing=0.15
-data = pd.read_csv("Experiment_Results.csv")
-#data= pd.read_excel("Experiment_Results.xlsx", engine='openpyxl')
-data= data.drop(['# of Waypoints','Error distance (Source)', 'Error distance (FollowUp)',
+
+if FORMAT_OUT == 'xlsx':
+    data = pd.read_excel(FILE_IN, engine='openpyxl')
+else:
+    data = pd.read_csv(FILE_IN)
+
+data = data.drop(['# of Waypoints','Error distance (Source)', 'Error distance (FollowUp)',
                  'Distance to the car Follow up', 'Distance to the car Source','Source exec time',
                  'Follow up exec time'  ],axis=1)
 
@@ -338,7 +354,6 @@ resutl_4_FailuresTd.insert(0,"MRIP4")
 resutl_4_PosFailuresTo.insert(0,"MRIP4")
 resutl_4_PosFailuresTd.insert(0,"MRIP4")
 
-file='Evaluation.xlsx'
 names=["", "Original", "Mutant1", "Mutant2", "Mutant3", "Mutant4", "Mutant5", "Mutant6", "Mutant7"
        , "Mutant8", "Mutant9", "Mutant10", "Mutant11", "Mutant12", "Mutant13", "Mutant14", "Mutant15"
        , "Mutant16", "Mutant17", "Mutant18", "Mutant19", "Mutant20"]
@@ -377,9 +392,15 @@ PossibleTd.append(resutl_1_3_PosFailuresTd)
 PossibleTd.append(resutl_2_PosFailuresTd)
 PossibleTd.append(resutl_3_PosFailuresTd)
 PossibleTd.append(resutl_4_PosFailuresTd)
-pd.DataFrame(To).T.to_excel(file, sheet_name="FAILURES_TO",index=False, header=False)
-with pd.ExcelWriter(file,engine="openpyxl" ,mode='a') as writer: 
-    pd.DataFrame(Td).T.to_excel(writer, sheet_name="FAILURES_TD",index=False, header=False)
-    pd.DataFrame(PossibleTo).T.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TO",index=False, header=False)
-    pd.DataFrame(PossibleTd).T.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TD",index=False, header=False)
 
+if FORMAT_OUT == 'xlsx':
+    pd.DataFrame(To).T.to_excel(FILE_OUT, sheet_name="FAILURES_TO", index=False, header=False)
+    with pd.ExcelWriter(FILE_OUT,engine="openpyxl" ,mode='a') as writer: 
+        pd.DataFrame(Td).T.to_excel(writer, sheet_name="FAILURES_TD", index=False, header=False)
+        pd.DataFrame(PossibleTo).T.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TO", index=False, header=False)
+        pd.DataFrame(PossibleTd).T.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TD", index=False, header=False)
+else:
+    pd.DataFrame(To).T.to_csv(FILE_OUT.format(sheet_name='FAILURES_TO'), index=False, header=False)
+    pd.DataFrame(Td).T.to_csv(FILE_OUT.format(sheet_name='FAILURES_TD'), index=False, header=False)
+    pd.DataFrame(PossibleTo).T.to_csv(FILE_OUT.format(sheet_name='POSSIBLE_FAILURES_TO'), index=False, header=False)
+    pd.DataFrame(PossibleTd).T.to_csv(FILE_OUT.format(sheet_name='POSSIBLE_FAILURES_TD'), index=False, header=False)
