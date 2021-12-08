@@ -1,20 +1,21 @@
 # Autonomous-vehicle
 
-This repository shares the experiments used in the "Performance-Driven Metamorphic Testing ofCyber-Physical Systems" paper for replicability purposes:
+This repository shares the experiments used in the "Performance-Driven Metamorphic Testing of Cyber-Physical Systems" paper for replicability purposes.
 
-## Files
-"METAMORPHIC_TESTING_EXPERIMENT_MAIN.m" is the main script to execute the test cases on the system and its mutants.
+## Running the experiments
+1. Install the [requirements](#requirements) for the [simulation](#simulation) and the [evaluation script](#evaluation-script).
+2. Run `GENERATE_TESTSUITE.m` (Can be skipped by copying `Results/testSuite.mat` to the project's root directory).
+3. Run `METAMORPHIC_TESTING_EXPERIMENT_MAIN.m` ([It takes a while](#experiment-runtime), can be skipped by copying `Results/ExperimentResults.csv` to the project's root directory).
+4. Run `CompileEvaluationResults.py` (Should produce results similar to `Results/Evaluation_*.csv`).
 
-"CompileEvaluationResults.py" is the script that compiles the final evaluation results from the system outputs produced by the previous step.
+`ExperimentResults.*` contains all the simulation results. By default we use the CSV format, but XLSX can also be used by tweaking `METAMORPHIC_TESTING_EXPERIMENT_MAIN.m` a bit.
 
-### Directory structure
-* The "ExperimentalMutants" includes the mutants used in this evaluation.
-* The "functions" folder includes the functions needed to perform the execution.
-* The "data" folder includes the data needed to run the experiments.
-* The "results" folder includes the test execution outputs, so that the expensive simulation step can be skipped, as well as the final evaluation results.
+`Evaluation*` contains the failures for each mutant (and the original) and metamorphic test, as well as the number of possible metamorphic test failures. With this data, the false positives, mutation score, and failure detection ratio can be calculated. The evaluation results consist of 4 workbooks, so they can only be stored in a single file if the XLSX format is used (`Evaluation.xlsx`), and for CSV, the workbooks are written into 4 different `Evaluation_*.csv` files instead.
 
 ## Requirements
-The requirements to execute the experiments can be found in the following file:
+
+### Simulation
+The requirements to execute the simulations (`GENERATE_TESTSUITE.m` and `METAMORPHIC_TESTING_EXPERIMENT_MAIN.m`) can be found in the following file:
 
 https://github.com/mathworks/vehicle-pure-pursuit/blob/a90aa52bd80676ae54b87e659d86901c5ef0f09d/README.md
 
@@ -22,11 +23,25 @@ Under the **3_USCity** section.
 
 Our experimental setup does not require the 3D visualization environment, so the GPU requirement can be ignored. The simulations have also been successfuly run on a machine with only 8GB of available RAM.
 
-# Experiment runtime
-Running the simulations (METAMORPHIC_TESTING_EXPERIMENT_MAIN.m) took around 7 days in total (~8 hours per mutant) on a laptop with the following specs:
+### Evaluation script
+The final results are compiled by the `CompileEvaluationResults.py` script, which requires (tested under Windows 10):
+* **Python 3** (`CPython 3.7.0`)
+* **pandas** (`pip install pandas==1.1.5`)
+* **(Optional) openpyxl** (`pip install openpyxl==3.0.9`) (For reading and/or writing XLSX files, but CSV can be used instead)
+
+Requirement versions are the exact ones used to verify the replication package, other versions may work.
+
+## Experiment runtime
+Running the simulations (`METAMORPHIC_TESTING_EXPERIMENT_MAIN.m`) took around 7 days in total (~8 hours per mutant) on a laptop with the following specs:
 * CPU: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz   2.59 GHz
 * RAM: 8GB
 * OS: Windows 10
 * Matlab version: 2021b
 
-The evaluation results presented in the paper are based on the system outputs collected in "results/Experiment_Results_Paper.csv", which were obtained with Matlab version 2020a under Windows 10. The system outputs obtained, and thus the evaluation results, might differ slightly on different systems.
+The evaluation results presented in the paper (`Results/Evaluation*`) are based on the system outputs collected in `Results/Experiment_Results*`, which were obtained with Matlab version 2020a under Windows 10. The system outputs obtained, and thus the evaluation results, might differ slightly on different systems.
+
+## Directory structure
+* The "ExperimentalMutants" includes the mutants used in this evaluation.
+* The "functions" folder includes the functions needed by the Matlab scripts.
+* The "data" folder includes the data needed to run the experiments.
+* The "Results" folder includes al the intermediate and final experimental data, so that the expensive simulation and other steps can be skipped.
