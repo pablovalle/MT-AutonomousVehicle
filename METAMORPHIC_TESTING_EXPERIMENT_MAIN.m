@@ -16,8 +16,6 @@ Mutants_Count = size(Mutants,2);
 %% Init Results table
 ResultsTableFile = 'Experiment_Results.csv'; %'Experiment_Results.xlsx';
 ResultsTableVariableNames={'Model','MRIP','Test Case','# of Waypoints','Error distance (Source)','Error distance (FollowUp)','Time to destination (Source)','Time to destination (FollowUp)','Balancing (Source)','Balancing (FollowUp)','Distance to the car Follow up','Distance to the car Source','Source exec time','Follow up exec time'};
-%ResultsTableWrittenBefore = max(fcountlines(ResultsTableFile) - 1, 0);
-%disp(['ResultsTableWrittenBefore = ' num2str(ResultsTableWrittenBefore)]);
 ResultsTableCreated = false;
 %% Init state
 load testSuite;
@@ -68,5 +66,4 @@ for i=mutant_index:Mutants_Count-1
            end
         end
     end
-    %writetable(ResultsTable,'Experiment_Results.xlsx');
 end
