@@ -32,9 +32,15 @@ else
     mrip_index = 0;
     test_index = 1;
 end
+%% Empty QoSMeasure struct for preallocation
+QoSMeasureEmpty.errorDistance = -inf;
+QoSMeasureEmpty.balancing = -inf;
+QoSMeasureEmpty.timeToDestination = -inf;
+QoSMeasureEmpty.Distance = -inf;
 %% Test Execution
 disp('Executing test cases...')
 for i=mutant_index:Mutants_Count-1
+    QoSMeasureSource = repmat(QoSMeasureEmpty, nTest);
     for j=mrip_index:MRIP_Count-1
         for ii=test_index:nTest
            % Store experiment progress
@@ -50,11 +56,14 @@ for i=mutant_index:Mutants_Count-1
            disp(['Test case = ' num2str(ii) '/' num2str(nTest)])
            disp(['Execution moment=  ' datestr(datetime('now'))]);
            % Execute source test case
-           if j == 0 || exist('QoSMeasure','var') ~= 1
+           if QoSMeasureSource(ii).timeToDestination == -inf
               tic;
-              QoSMeasure = executeTestCase(sourceTestSuite{ii},Mutants(1,i+1));
+              QoSMeasureSource(ii) = executeTestCase(sourceTestSuite{ii},Mutants(1,i+1));
               testDurSource = toc;
+           else
+              testDurSource = 0;
            end
+           QoSMeasure = QoSMeasureSource(ii);
            % Execute follow-up test case
            tic;
            QoSMeasureFollowUp = executeTestCase(followupTestSuite(i+1, j+1, ii),Mutants(1,i+1));
