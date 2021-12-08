@@ -1,6 +1,7 @@
 # Autonomous-vehicle
+This repository contains the replication package for the autonomous vehicle experiments presented in the "Performance-Driven Metamorphic Testing of Cyber-Physical Systems" paper.
 
-This repository shares the experiments used in the "Performance-Driven Metamorphic Testing of Cyber-Physical Systems" paper for replicability purposes.
+These experiments are based on an open source autonomous vehicle model published by MathWorks: https://github.com/mathworks/vehicle-pure-pursuit.
 
 ## Running the experiments
 1. Install the [requirements](#requirements) for the [simulation](#simulation) and the [evaluation script](#evaluation-script).
