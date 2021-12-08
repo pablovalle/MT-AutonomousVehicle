@@ -1,3 +1,8 @@
+# Temporary experimental files
+/*.xlsx
+/*.csv
+/*.mat
+
 # Windows default autosave extension
 *.asv
 
