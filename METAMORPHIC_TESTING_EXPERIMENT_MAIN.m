@@ -39,6 +39,10 @@ for i=mutant_index:Mutants_Count-1
         for ii=test_index:nTest
            % Store experiment progress
            save('experimentProgress.csv', 'i', 'j', 'ii', '-ascii');
+           % Reset for next iterations after loading
+           mutant_index = 0;
+           mrip_index = 0;
+           test_index = 1;
            % Display current test execution
            disp('========================================')
            disp(['Mutant = ' num2str(i+1) '/' num2str(Mutants_Count)]);
