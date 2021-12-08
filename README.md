@@ -41,7 +41,7 @@ Running the simulations (`METAMORPHIC_TESTING_EXPERIMENT_MAIN.m`) took around 7 
 The evaluation results presented in the paper (`Results/Evaluation*`) are based on the system outputs collected in `Results/Experiment_Results*`, which were obtained with Matlab version 2020a under Windows 10. The system outputs obtained, and thus the evaluation results, might differ slightly on different systems.
 
 ## Directory structure
-* The "ExperimentalMutants" includes the mutants used in this evaluation.
-* The "functions" folder includes the functions needed by the Matlab scripts.
-* The "data" folder includes the data needed to run the experiments.
-* The "Results" folder includes al the intermediate and final experimental data, so that the expensive simulation and other steps can be skipped.
+* The `ExperimentalMutants` directory includes the mutants used in this evaluation.
+* The `functions` directory includes the functions needed by the Matlab scripts.
+* The `data` directory includes some data needed to run the experiments.
+* The `Results` directory includes al the intermediate and final experimental data, so that the expensive simulation and other steps can be skipped.
