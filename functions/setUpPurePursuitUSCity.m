@@ -1,7 +1,7 @@
 % Pure Pursuit Model Initialization
 %
 % Copyright 2020 The MathWorks, Inc.
-clear;
+%clear;
 %rng(0);
 %% add Image to the path
 addpath(genpath('Images'));

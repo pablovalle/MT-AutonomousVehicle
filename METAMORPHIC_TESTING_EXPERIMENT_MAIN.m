@@ -6,7 +6,7 @@ disp('Initializing...')
 addpath('data');
 addpath('functions');
 addpath('ExperimentalMutants');
-setUpPurePursuitUSCity;
+%setUpPurePursuitUSCity;
 %% Enumerate MRIPs and mutants
 MRIP_Names=["MRIP1_1","MRIP1_2","MRIP1_3","MRIP2","MRIP3", "MRIP4"];
 MRIP_Count = size(MRIP_Names,2);
