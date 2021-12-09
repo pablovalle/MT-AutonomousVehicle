@@ -6,7 +6,6 @@ disp('Initializing...')
 addpath('data');
 addpath('functions');
 addpath('ExperimentalMutants');
-%setUpPurePursuitUSCity;
 %% Enumerate MRIPs and mutants
 MRIP_Names=["MRIP1_1","MRIP1_2","MRIP1_3","MRIP2","MRIP3", "MRIP4"];
 MRIP_Count = size(MRIP_Names,2);
@@ -31,6 +30,11 @@ else
     mutant_index = 0;
     mrip_index = 0;
     test_index = 1;
+end
+%% Load models
+disp('Loading SUT models...')
+for i=mutant_index:Mutants_Count-1
+    load_system(Mutants(i+1));
 end
 %% Empty QoSMeasure struct for preallocation
 QoSMeasureEmpty.errorDistance = -inf;
