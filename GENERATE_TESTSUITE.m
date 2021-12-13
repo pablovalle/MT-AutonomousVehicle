@@ -31,7 +31,7 @@ end
 % MRIP4 was generated last, and needs to be kept that way for RNG
 % compatibility with original experiments
 mrip = MRIP_Count-1;
-for mutant=0:19
+for mutant=0:Mutants_Count-1
     for test=1:nTest
         followupTestSuite(mutant+1,mrip+1,test) = MRIP{mrip+1}(sourceTestSuite{test});
     end
