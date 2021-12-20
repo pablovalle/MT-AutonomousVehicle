@@ -3,8 +3,8 @@
 import pandas as pd
 import math
 
-FILE_IN  = "Experiment_Results.csv"
-FILE_OUT ='Evaluation_{sheet_name}.csv'
+FILE_IN  = "Experiment_Results.xlsx"
+FILE_OUT ='EvaluationFinal2_{sheet_name}.xlsx'
 #FILE_OUT ='Evaluation.xlsx'
 
 FORMAT_IN = 'csv'
@@ -93,7 +93,7 @@ for i in range(0,len(MRIP_1_1_Data)):
             td_fdr="FAIL"
         else:
             td_fdr="PASS"
-        if abs(MRIP_1_1_Data[i].loc['Balancing (Source)']-MRIP_1_1_Data[sobran].loc['Balancing (Source)'])<0:
+        if MRIP_1_1_Data[i].loc['Balancing (Source)']-MRIP_1_1_Data[sobran].loc['Balancing (Source)']<0:
             to_fdr="FAIL"
         else:
             to_fdr="PASS"
@@ -156,7 +156,7 @@ for i in range(0,len(MRIP_1_3_Data)):
 #MRIP 3 TD_F==TD_S / TO_F==TO_S
 print('  MRIP3')
 for i in range(0,len(MRIP_3_Data)):
-    if MRIP_3_Data[i].loc['Time to destination (Source)']*1.15>=MRIP_3_Data[i].loc['Time to destination (FollowUp)'] and MRIP_3_Data[i].loc['Time to destination (Source)']*0.85<=MRIP_3_Data[i].loc['Time to destination (FollowUp)']:
+    if MRIP_3_Data[i].loc['Time to destination (Source)']*1.05>=MRIP_3_Data[i].loc['Time to destination (FollowUp)'] and MRIP_3_Data[i].loc['Time to destination (Source)']*0.95<=MRIP_3_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
         td="FAIL"
@@ -183,7 +183,7 @@ for i in range(0,len(MRIP_3_Data)):
 #MRIP 4 TD_F==TD_S / TO_F==TO_S
 print('  MRIP4')
 for i in range(0,len(MRIP_4_Data)):
-    if MRIP_4_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_4_Data[i].loc['Time to destination (FollowUp)'] and MRIP_4_Data[i].loc['Time to destination (Source)']*0.90<=MRIP_4_Data[i].loc['Time to destination (FollowUp)']:
+    if MRIP_4_Data[i].loc['Time to destination (Source)']*1.05>=MRIP_4_Data[i].loc['Time to destination (FollowUp)'] and MRIP_4_Data[i].loc['Time to destination (Source)']*0.95<=MRIP_4_Data[i].loc['Time to destination (FollowUp)']:
         td="PASS"
     else:
         td="FAIL"
@@ -204,7 +204,7 @@ for i in range(0,len(MRIP_4_Data)):
             to_fdr="FAIL"
         else:
             to_fdr="PASS"
-        result_4_FDR=result_1_1_FDR.append({'Model': MRIP_4_Data[i].loc['Model'],'MRIP':MRIP_4_Data[i].loc['MRIP'],'TestCase':MRIP_4_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
+        result_4_FDR=result_4_FDR.append({'Model': MRIP_4_Data[i].loc['Model'],'MRIP':MRIP_4_Data[i].loc['MRIP'],'TestCase':MRIP_4_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
 
    
 #MRIP 2 TD_F>=TD_S / TO_F==TO_S
@@ -318,12 +318,12 @@ resutl_3_FailuresTo, resutl_3_FailuresTd =getMutantDetectionRate(result_3,"FAIL"
 resutl_4_FailuresTo, resutl_4_FailuresTd =getMutantDetectionRate(result_4,"FAIL")
 
 #FDR=Sumar todos los que tengan PASS-> Estos son los que pueden fallar
-resutl_1_1_PosFailuresTo, resutl_1_1_PosFailuresTd =getMutantDetectionRate(result_1_1,"PASS")
-resutl_1_2_PosFailuresTo, resutl_1_2_PosFailuresTd =getMutantDetectionRate(result_1_2,"PASS")
-resutl_1_3_PosFailuresTo, resutl_1_3_PosFailuresTd =getMutantDetectionRate(result_1_3,"PASS")
-resutl_2_PosFailuresTo, resutl_2_PosFailuresTd =getMutantDetectionRate(result_2,"PASS")
-resutl_3_PosFailuresTo, resutl_3_PosFailuresTd =getMutantDetectionRate(result_3,"PASS")
-resutl_4_PosFailuresTo, resutl_4_PosFailuresTd =getMutantDetectionRate(result_4,"PASS")
+resutl_1_1_PosFailuresTo, resutl_1_1_PosFailuresTd =getMutantDetectionRate(result_1_1_FDR,"PASS")
+resutl_1_2_PosFailuresTo, resutl_1_2_PosFailuresTd =getMutantDetectionRate(result_1_2_FDR,"PASS")
+resutl_1_3_PosFailuresTo, resutl_1_3_PosFailuresTd =getMutantDetectionRate(result_1_3_FDR,"PASS")
+resutl_2_PosFailuresTo, resutl_2_PosFailuresTd =getMutantDetectionRate(result_2_FDR,"PASS")
+resutl_3_PosFailuresTo, resutl_3_PosFailuresTd =getMutantDetectionRate(result_3_FDR,"PASS")
+resutl_4_PosFailuresTo, resutl_4_PosFailuresTd =getMutantDetectionRate(result_4_FDR,"PASS")
 
 resutl_1_1_FailuresTo.insert(0,"MRIP1_1")
 resutl_1_1_FailuresTd.insert(0,"MRIP1_1")
@@ -358,6 +358,9 @@ resutl_4_PosFailuresTd.insert(0,"MRIP4")
 names=["", "Original", "Mutant1", "Mutant2", "Mutant3", "Mutant4", "Mutant5", "Mutant6", "Mutant7"
        , "Mutant8", "Mutant9", "Mutant10", "Mutant11", "Mutant12", "Mutant13", "Mutant14", "Mutant15"
        , "Mutant16", "Mutant17", "Mutant18", "Mutant19", "Mutant20"]
+names1=["", "Mutant1", "Mutant2", "Mutant3", "Mutant4", "Mutant5", "Mutant6", "Mutant7"
+       , "Mutant8", "Mutant9", "Mutant10", "Mutant11", "Mutant12", "Mutant13", "Mutant14", "Mutant15"
+       , "Mutant16", "Mutant17", "Mutant18", "Mutant19", "Mutant20"]
 To= []
 To.append(names)
 To.append(resutl_1_1_FailuresTo)
@@ -377,7 +380,7 @@ Td.append(resutl_3_FailuresTd)
 Td.append(resutl_4_FailuresTd)
 
 PossibleTo= []
-PossibleTo.append(names)
+PossibleTo.append(names1)
 PossibleTo.append(resutl_1_1_PosFailuresTo)
 PossibleTo.append(resutl_1_2_PosFailuresTo)
 PossibleTo.append(resutl_1_3_PosFailuresTo)
@@ -386,7 +389,7 @@ PossibleTo.append(resutl_3_PosFailuresTo)
 PossibleTo.append(resutl_4_PosFailuresTo)
 
 PossibleTd= []
-PossibleTd.append(names)
+PossibleTd.append(names1)
 PossibleTd.append(resutl_1_1_PosFailuresTd)
 PossibleTd.append(resutl_1_2_PosFailuresTd)
 PossibleTd.append(resutl_1_3_PosFailuresTd)
