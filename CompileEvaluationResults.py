@@ -17,7 +17,7 @@ if FILE_OUT.endswith('.xlsx'):
 variable_range_time=1
 variable_range_balancing=0.15
 
-if FORMAT_OUT == 'xlsx':
+if FORMAT_IN == 'xlsx':
     data = pd.read_excel(FILE_IN, engine='openpyxl')
 else:
     data = pd.read_csv(FILE_IN)
