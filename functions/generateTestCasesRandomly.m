@@ -16,6 +16,7 @@ function testSuite = generateTestCasesRandomly(nTestCases)
         testSuite{ii}.refPose = refPose;
         testSuite{ii}.xRef = xRef;
         testSuite{ii}.yRef = yRef;
+        testSuite{ii}.distance=getDistance(xRef,yRef);
         testSuite{ii}.nominalSpeed = randi([6 12]); %[6-12]
         testSuite{ii}.minimalSpeed = randi([1 4]); %[0.5-4]
         testSuite{ii}.angVelGain = randi([0 100]); %[0-100]
