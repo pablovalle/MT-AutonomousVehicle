@@ -100,4 +100,5 @@ function testCase=generateFollowUpMRIP4(sourceTestCase)
     refPose(:,1)=testCase.xRef(:,1);
     refPose(:,2)=testCase.yRef(:,1);
     testCase.refPose=refPose;
+    testCase.distance=getDistance(testCase.xRef, testCase.yRef);
 end
