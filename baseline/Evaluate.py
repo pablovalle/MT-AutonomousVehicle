@@ -9,7 +9,7 @@ THRESHOLD_KEYS = {
     'TTO': ['Balancing (Source)', 'Balancing (FollowUp)'],
 }
 
-def evaluate_results(results, thresholds):
+def evaluate_results(results, test_distances, thresholds):
     false_positives = set()
     possible_failures = 0
     failures = 0
@@ -20,6 +20,7 @@ def evaluate_results(results, thresholds):
         if model is not np.NaN:
             source = str(int(results.loc[i, "Test Case"]))
             followup = f'{source}:{results.loc[i, "MRIP"]}'
+            distance = test_distances[source]
             failure = [False, False]
             for threshold_key in THRESHOLD_KEYS:
                 threshold = thresholds[threshold_key]
@@ -33,7 +34,7 @@ def evaluate_results(results, thresholds):
                             continue
                         if model != ORIGINAL_MODEL:
                             possible_failures += 1
-                        if value > threshold:
+                        if value / distance > threshold:
                             failure[test_num] = True
             if model == ORIGINAL_MODEL:
                 if failures:
@@ -53,23 +54,33 @@ def evaluate_results(results, thresholds):
 
 def main():
     import sys
-    if len(sys.argv) != 3:
-        print(f'./Evaluate.py <RESULTS_FILE> <THRESHOLDS_FILE>')
+    if len(sys.argv) != 4:
+        print(f'./Evaluate.py <RESULTS_FILE> <TEST_DISTANCES_FILE> <THRESHOLDS_FILE>')
         exit(0)
     results_file = sys.argv[1]
-    thresholds_file = sys.argv[2]
+    test_distances_file = sys.argv[2]
+    thresholds_file = sys.argv[3]
     results = None
     if results_file.endswith('.xlsx'):
         results = pd.read_excel(results_file, engine='openpyxl')
     else:
         results = pd.read_csv(results_file)
+    test_distances = None
+    if test_distances_file.endswith('.xlsx'):
+        test_distances = pd.read_excel(test_distances_file, engine='openpyxl')
+    else:
+        test_distances = pd.read_csv(test_distances_file)
+    test_distances = { 
+        str(test_distances.loc[i, "testcase"]): test_distances.loc[i, "distance"] 
+        for i in range(len(test_distances))
+    }
     thresholds = None
     if thresholds_file.endswith('.xlsx'):
         thresholds = pd.read_excel(thresholds_file, engine='openpyxl')
     else:
         thresholds = pd.read_csv(thresholds_file)
     thresholds = { key: thresholds.loc[0, key] for key in THRESHOLD_KEYS }
-    false_positives, possible_failures, failures, mutants_killed, skipped = evaluate_results(results=results, thresholds=thresholds)
+    false_positives, possible_failures, failures, mutants_killed, skipped = evaluate_results(results=results, test_distances=test_distances, thresholds=thresholds)
     print(f'DetectedFailures={failures}/{possible_failures}')
     print(f'FPsCount={len(false_positives)}')
     print(f'MutantsKilledCount={len(mutants_killed)}')
