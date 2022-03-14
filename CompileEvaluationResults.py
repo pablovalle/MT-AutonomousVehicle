@@ -1,10 +1,15 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Mar 12 10:26:46 2022
+
+@author: pablo
+"""
 
 import pandas as pd
 import math
 
-FILE_IN  = "Experiment_Results.xlsx"
-FILE_OUT ='EvaluationFinal2_{sheet_name}.xlsx'
+FILE_IN  = "Results\Experiment_Results.xlsx"
+FILE_OUT ='Results\EvaluationFinal_{sheet_name}.xlsx'
 #FILE_OUT ='Evaluation.xlsx'
 
 FORMAT_IN = 'csv'
@@ -13,9 +18,6 @@ if FILE_IN.endswith('.xlsx'):
 FORMAT_OUT = 'csv'
 if FILE_OUT.endswith('.xlsx'):
     FORMAT_OUT = 'xlsx'
-
-variable_range_time=1
-variable_range_balancing=0.15
 
 if FORMAT_IN == 'xlsx':
     data = pd.read_excel(FILE_IN, engine='openpyxl')
@@ -26,385 +28,160 @@ data = data.drop(['# of Waypoints','Error distance (Source)', 'Error distance (F
                  'Distance to the car Follow up', 'Distance to the car Source','Source exec time',
                  'Follow up exec time'  ],axis=1)
 
+data['Balancing (Source)'].loc[(data['Balancing (Source)']<0.1)]=0.1
+data['Balancing (FollowUp)'].loc[(data['Balancing (FollowUp)']<0.1)]=0.1
+toDiscard_MRIP3=list()
+toDiscard_MRIP4=list()
+def calcDetection_Mrip1(data, mrip_to, mrip_td, threshold_td, threshold_to):
+    
+    if data['Time to destination (Source)']*threshold_td<=data['Time to destination (FollowUp)']:
+        mrip_td=mrip_td+1
+    if data['Balancing (Source)']>=data['Balancing (FollowUp)']*threshold_to:
+        mrip_to=mrip_to+1
+    
+    return mrip_to, mrip_td
+
+def calcDetection_Mrip2(data, mrip_to, mrip_td, threshold_td, threshold_to):
+    if data['Time to destination (Source)']>=data['Time to destination (FollowUp)']*threshold_td:
+        mrip_td=mrip_td+1
+
+    if abs(data['Balancing (Source)']-data['Balancing (FollowUp)'])/data['Balancing (Source)']>=threshold_to:
+        mrip_to=mrip_to+1
+    
+    return mrip_to, mrip_td
+
+def calcDetection_Mrip3(data, mrip_to, mrip_td, threshold_td, threshold_to):
+    if abs(data['Time to destination (Source)']-data['Time to destination (FollowUp)'])/data['Time to destination (Source)']>=threshold_td:
+        mrip_td=mrip_td+1
+    timeDiff=abs(data['Time to destination (FollowUp)'] - data['Time to destination (Source)'])/10
+    if (abs(data['Balancing (Source)']-data['Balancing (FollowUp)'])-timeDiff)/max([data['Balancing (Source)'],data['Balancing (FollowUp)']])>=threshold_to and data['Test Case'] not in toDiscard_MRIP3 and data['Time to destination (Source)']!=99999:
+        mrip_to=mrip_to+1
+        if data['Model']==caseStudies[0]:
+            toDiscard_MRIP3.append(data['Test Case'])
+        
+    
+    return mrip_to, mrip_td
+
+def calcDetection_Mrip4(data, mrip_to, mrip_td, threshold_td, threshold_to):
+    if abs(data['Time to destination (Source)']-data['Time to destination (FollowUp)'])/data['Time to destination (Source)']>=threshold_td:
+        mrip_td=mrip_td+1
+    if (abs(data['Balancing (Source)']-data['Balancing (FollowUp)'])-0.2)/max([data['Balancing (Source)'],data['Balancing (FollowUp)']])>=threshold_to and data['Test Case'] not in toDiscard_MRIP4:
+        mrip_to=mrip_to+1
+        if data['Model']==caseStudies[0]:
+            toDiscard_MRIP4.append(data['Test Case'])
+    
+    return mrip_to, mrip_td
+def compareWithOriginal(data1, data2, mrip_to, mrip_td):
+
+    if data1['Time to destination (Source)']<data2['Time to destination (Source)']:
+        mrip_td=mrip_td+1
+    if data1['Balancing (Source)']<data2['Balancing (Source)']:
+        mrip_to=mrip_to+1
+    
+    return mrip_to, mrip_td
+
 print("Data loaded")
-i=0
-time=[]
-balancing=[]
 nTest=100
-
-td="PASS"
-to="PASS"
-td_fdr="PASS"
-to_fdr="PASS"
-
-MRIP_1_1_Data=[]
-MRIP_1_2_Data=[]
-MRIP_1_3_Data=[]
-MRIP_2_Data=[]
-MRIP_3_Data=[]
-MRIP_4_Data=[]
-result_1_1=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_1_2=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_1_3=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_2=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_3=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_4=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_1_1_FDR=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_1_2_FDR=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_1_3_FDR=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_2_FDR=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_3_FDR=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-result_4_FDR=pd.DataFrame({'Model': [], 'MRIP': [], 'TestCase': [],'TD Verdict': [],'TO Verdict': []})
-
-
-#DIVIDIR DATA POR CADA MRIP
-for i in range(0,len(data)):
-    if data.loc[i,"MRIP"]=="MRIP1_1":
-        MRIP_1_1_Data.append(data.loc[i,:])
-    elif data.loc[i,"MRIP"]=="MRIP1_2":
-        MRIP_1_2_Data.append(data.loc[i,:])
-    elif data.loc[i,"MRIP"]=="MRIP1_3":
-        MRIP_1_3_Data.append(data.loc[i,:])
-    elif data.loc[i,"MRIP"]=="MRIP2":
-        MRIP_2_Data.append(data.loc[i,:])
-    elif data.loc[i,"MRIP"]=="MRIP3":
-        MRIP_3_Data.append(data.loc[i,:])
-    elif data.loc[i,"MRIP"]=="MRIP4":
-        MRIP_4_Data.append(data.loc[i,:])
-
-print("Evaluating")
-
-#MRIP 1.1 -> TD_F<=TD_S /  TO_F>=TO_S
-print('  MRIP1.1')
-for i in range(0,len(MRIP_1_1_Data)):
-    if MRIP_1_1_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_1_1_Data[i].loc['Time to destination (FollowUp)']:
-        td="PASS"
-    else:
-        td="FAIL"
-    if MRIP_1_1_Data[i].loc['Balancing (FollowUp)']>=MRIP_1_1_Data[i].loc['Balancing (Source)']-(MRIP_1_1_Data[i].loc['Time to destination (Source)']/100):
-        to="PASS"
-    else:
-        to="FAIL"
-    result_1_1=result_1_1.append({'Model': MRIP_1_1_Data[i].loc['Model'],'MRIP':MRIP_1_1_Data[i].loc['MRIP'],'TestCase':MRIP_1_1_Data[i].loc['Test Case'],'TD Verdict': td,'TO Verdict': to},ignore_index=True)
+nMrip=6
+nStudies=21
+caseStudies=list(dict.fromkeys(data['Model']))
+#Test Cases to Discard.
+toDiscard=set()
+for i in range(0,nTest):
+    for j in range(0,nMrip):
+        if data['Time to destination (Source)'][j*nTest+i]==99999:
+            toDiscard.add(data['Test Case'][j*nTest+i])
+            
+results_To=pd.DataFrame({"Mutant":[], "MRIP1_1":[], "MRIP1_2":[], "MRIP1_3":[], "MRIP2":[], "MRIP3":[], "MRIP4":[]})
+results_Td=pd.DataFrame({"Mutant":[], "MRIP1_1":[], "MRIP1_2":[], "MRIP1_3":[], "MRIP2":[], "MRIP3":[], "MRIP4":[]})
+results_ToPos=pd.DataFrame({"Mutant":[], "MRIP1_1":[], "MRIP1_2":[], "MRIP1_3":[], "MRIP2":[], "MRIP3":[], "MRIP4":[]})
+results_TdPos=pd.DataFrame({"Mutant":[], "MRIP1_1":[], "MRIP1_2":[], "MRIP1_3":[], "MRIP2":[], "MRIP3":[], "MRIP4":[]})
+  
+            
+for i in range(0,nStudies):
+    mrip1_1_to=0
+    mrip1_2_to=0
+    mrip1_3_to=0
+    mrip2_to=0
+    mrip3_to=0
+    mrip4_to=0
     
-    sobran=i%100
-    if i>99:
-        if MRIP_1_1_Data[i].loc['Time to destination (Source)']-MRIP_1_1_Data[sobran].loc['Time to destination (Source)']<0:
-            td_fdr="FAIL"
-        else:
-            td_fdr="PASS"
-        if MRIP_1_1_Data[i].loc['Balancing (Source)']-MRIP_1_1_Data[sobran].loc['Balancing (Source)']<0:
-            to_fdr="FAIL"
-        else:
-            to_fdr="PASS"
-        result_1_1_FDR=result_1_1_FDR.append({'Model': MRIP_1_1_Data[i].loc['Model'],'MRIP':MRIP_1_1_Data[i].loc['MRIP'],'TestCase':MRIP_1_1_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
-
-#MRIP 1.2-> TD_F<=TD_S / TO_F>=TO_S
-print('  MRIP1.2')
-for i in range(0,len(MRIP_1_2_Data)):
-    if MRIP_1_2_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_1_2_Data[i].loc['Time to destination (FollowUp)']:
-        td="PASS"
-    else:
-        td="FAIL"
-    if MRIP_1_2_Data[i].loc['Balancing (FollowUp)']>=MRIP_1_1_Data[i].loc['Balancing (Source)']-(MRIP_1_1_Data[i].loc['Time to destination (Source)']/100):
-        to="PASS"
-    else:
-        to="FAIL"
-    result_1_2=result_1_2.append({'Model': MRIP_1_2_Data[i].loc['Model'],'MRIP':MRIP_1_2_Data[i].loc['MRIP'],'TestCase':MRIP_1_2_Data[i].loc['Test Case'],'TD Verdict': td,'TO Verdict': to},ignore_index=True)
+    mrip1_1_td=0
+    mrip1_2_td=0
+    mrip1_3_td=0
+    mrip2_td=0
+    mrip3_td=0
+    mrip4_td=0
     
+    mrip1_1_toPos=0
+    mrip1_2_toPos=0
+    mrip1_3_toPos=0
+    mrip2_toPos=0
+    mrip3_toPos=0
+    mrip4_toPos=0
     
-    sobran=i%100
-    if i>99:
-        if MRIP_1_2_Data[i].loc['Time to destination (Source)']-MRIP_1_2_Data[sobran].loc['Time to destination (Source)']<0:
-            td_fdr="FAIL"
-        else:
-            td_fdr="PASS"
-        if MRIP_1_2_Data[i].loc['Balancing (Source)']-MRIP_1_2_Data[sobran].loc['Balancing (Source)']<0:
-            to_fdr="FAIL"
-        else:
-            to_fdr="PASS"
-        result_1_2_FDR=result_1_2_FDR.append({'Model': MRIP_1_2_Data[i].loc['Model'],'MRIP':MRIP_1_2_Data[i].loc['MRIP'],'TestCase':MRIP_1_2_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
-
-    
-#MRIP 1.3-> TD_F<=TD_S / TO_F>=TO_S
-print('  MRIP1.3')
-for i in range(0,len(MRIP_1_3_Data)):
-    if MRIP_1_3_Data[i].loc['Time to destination (Source)']*1.1>=MRIP_1_3_Data[i].loc['Time to destination (FollowUp)']:
-        td="PASS"
-    else:
-        td="FAIL"
-    if MRIP_1_3_Data[i].loc['Balancing (FollowUp)']>=MRIP_1_1_Data[i].loc['Balancing (Source)']-(MRIP_1_1_Data[i].loc['Time to destination (Source)']/100):
-        to="PASS"
-    else:
-        to="FAIL"
-    result_1_3=result_1_3.append({'Model': MRIP_1_3_Data[i].loc['Model'],'MRIP':MRIP_1_3_Data[i].loc['MRIP'],'TestCase':MRIP_1_3_Data[i].loc['Test Case'],'TD Verdict': td,'TO Verdict': to},ignore_index=True)
-    
-        
-    sobran=i%100
-    if i>99:
-        if MRIP_1_3_Data[i].loc['Time to destination (Source)']-MRIP_1_3_Data[sobran].loc['Time to destination (Source)']<0:
-            td_fdr="FAIL"
-        else:
-            td_fdr="PASS"
-        if MRIP_1_3_Data[i].loc['Balancing (Source)']-MRIP_1_3_Data[sobran].loc['Balancing (Source)']<0:
-            to_fdr="FAIL"
-        else:
-            to_fdr="PASS"
-        result_1_3_FDR=result_1_3_FDR.append({'Model': MRIP_1_3_Data[i].loc['Model'],'MRIP':MRIP_1_3_Data[i].loc['MRIP'],'TestCase':MRIP_1_3_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
-
-   
-#MRIP 3 TD_F==TD_S / TO_F==TO_S
-print('  MRIP3')
-for i in range(0,len(MRIP_3_Data)):
-    if MRIP_3_Data[i].loc['Time to destination (Source)']*1.05>=MRIP_3_Data[i].loc['Time to destination (FollowUp)'] and MRIP_3_Data[i].loc['Time to destination (Source)']*0.95<=MRIP_3_Data[i].loc['Time to destination (FollowUp)']:
-        td="PASS"
-    else:
-        td="FAIL"
-    if MRIP_3_Data[i].loc['Balancing (FollowUp)']<=MRIP_3_Data[i].loc['Balancing (Source)']+(MRIP_3_Data[i].loc['Time to destination (Source)']/50) and MRIP_3_Data[i].loc['Balancing (FollowUp)']>=MRIP_3_Data[i].loc['Balancing (Source)']-(MRIP_3_Data[i].loc['Time to destination (Source)']/50):
-        to="PASS"
-    else:
-        to="FAIL"
-    result_3=result_3.append({'Model': MRIP_3_Data[i].loc['Model'],'MRIP':MRIP_3_Data[i].loc['MRIP'],'TestCase':MRIP_3_Data[i].loc['Test Case'],'TD Verdict': td,'TO Verdict': to},ignore_index=True)
-    
-      
-    sobran=i%100
-    if i>99:
-        if MRIP_3_Data[i].loc['Time to destination (Source)']-MRIP_3_Data[sobran].loc['Time to destination (Source)']<0:
-            td_fdr="FAIL"
-        else:
-            td_fdr="PASS"
-        if MRIP_3_Data[i].loc['Balancing (Source)']-MRIP_3_Data[sobran].loc['Balancing (Source)']<0:
-            to_fdr="FAIL"
-        else:
-            to_fdr="PASS"
-        result_3_FDR=result_3_FDR.append({'Model': MRIP_3_Data[i].loc['Model'],'MRIP':MRIP_3_Data[i].loc['MRIP'],'TestCase':MRIP_3_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
-
-   
-#MRIP 4 TD_F==TD_S / TO_F==TO_S
-print('  MRIP4')
-for i in range(0,len(MRIP_4_Data)):
-    if MRIP_4_Data[i].loc['Time to destination (Source)']*1.05>=MRIP_4_Data[i].loc['Time to destination (FollowUp)'] and MRIP_4_Data[i].loc['Time to destination (Source)']*0.95<=MRIP_4_Data[i].loc['Time to destination (FollowUp)']:
-        td="PASS"
-    else:
-        td="FAIL"
-    if MRIP_4_Data[i].loc['Balancing (FollowUp)']<=MRIP_4_Data[i].loc['Balancing (Source)']+(MRIP_4_Data[i].loc['Time to destination (Source)']/80) and MRIP_4_Data[i].loc['Balancing (FollowUp)']>=MRIP_4_Data[i].loc['Balancing (Source)']-(MRIP_4_Data[i].loc['Time to destination (Source)']/80):
-        to="PASS"
-    else:
-        to="FAIL"
-    result_4=result_4.append({'Model': MRIP_4_Data[i].loc['Model'],'MRIP':MRIP_4_Data[i].loc['MRIP'],'TestCase':MRIP_4_Data[i].loc['Test Case'],'TD Verdict': td,'TO Verdict': to},ignore_index=True)
-    
-       
-    sobran=i%100
-    if i>99:
-        if MRIP_4_Data[i].loc['Time to destination (Source)']-MRIP_4_Data[sobran].loc['Time to destination (Source)']<0:
-            td_fdr="FAIL"
-        else:
-            td_fdr="PASS"
-        if MRIP_4_Data[i].loc['Balancing (Source)']-MRIP_4_Data[sobran].loc['Balancing (Source)']<0:
-            to_fdr="FAIL"
-        else:
-            to_fdr="PASS"
-        result_4_FDR=result_4_FDR.append({'Model': MRIP_4_Data[i].loc['Model'],'MRIP':MRIP_4_Data[i].loc['MRIP'],'TestCase':MRIP_4_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
-
-   
-#MRIP 2 TD_F>=TD_S / TO_F==TO_S
-print('  MRIP2')
-for i in range(0,len(MRIP_2_Data)):
-    if MRIP_2_Data[i].loc['Time to destination (FollowUp)']>=MRIP_2_Data[i].loc['Time to destination (Source)']*0.90:
-       td="PASS"
-    else:
-        td="FAIL"
-    if MRIP_2_Data[i].loc['Balancing (FollowUp)']>=MRIP_2_Data[i].loc['Balancing (Source)']-(MRIP_2_Data[i].loc['Time to destination (Source)']/100) and MRIP_2_Data[i].loc['Balancing (FollowUp)']<=MRIP_2_Data[i].loc['Balancing (Source)']+(MRIP_2_Data[i].loc['Time to destination (Source)']/100) :
-        to="PASS"
-    else:
-        to="FAIL"
-    result_2=result_2.append({'Model': MRIP_2_Data[i].loc['Model'],'MRIP':MRIP_2_Data[i].loc['MRIP'],'TestCase':MRIP_2_Data[i].loc['Test Case'],'TD Verdict': td,'TO Verdict': to},ignore_index=True)
-    
-        
-    sobran=i%100
-    if i>99:
-        if MRIP_2_Data[i].loc['Time to destination (Source)']-MRIP_2_Data[sobran].loc['Time to destination (Source)']<0:
-            td_fdr="FAIL"
-        else:
-           td_fdr="PASS"
-        if MRIP_2_Data[i].loc['Balancing (Source)']-MRIP_2_Data[sobran].loc['Balancing (Source)']<0:
-            to_fdr="FAIL"
-        else:
-            to_fdr="PASS"
-        result_2_FDR=result_2_FDR.append({'Model': MRIP_2_Data[i].loc['Model'],'MRIP':MRIP_2_Data[i].loc['MRIP'],'TestCase':MRIP_2_Data[i].loc['Test Case'],'TD Verdict': td_fdr,'TO Verdict': to_fdr},ignore_index=True)
-
-print('Compiling results')
-
-
-def changeVerdict(result, testCase, VerdictType):
+    mrip1_1_tdPos=0
+    mrip1_2_tdPos=0
+    mrip1_3_tdPos=0
+    mrip2_tdPos=0
+    mrip3_tdPos=0
+    mrip4_tdPos=0
+    print("Running on mutant: "+caseStudies[i])
+    for j in range(0,nMrip):
+        for k in range(0, nTest):
+            if data['Test Case'][i] in toDiscard:
+                continue
+            indice=i*nMrip*nTest+j*nTest+k
+            indice2=j*nTest+k
+            if data['MRIP'][indice]=="MRIP1_1":
+                mrip1_1_to, mrip1_1_td=calcDetection_Mrip1(data.iloc[indice],mrip1_1_to,mrip1_1_td,1.1,1.3)
+                if i>0:
+                   mrip1_1_toPos, mrip1_1_tdPos=compareWithOriginal(data.iloc[indice],data.iloc[indice2],mrip1_1_toPos,mrip1_1_tdPos)                 
+            elif data['MRIP'][indice]=="MRIP1_2":
+                mrip1_2_to, mrip1_2_td=calcDetection_Mrip1(data.iloc[indice],mrip1_2_to,mrip1_2_td,1.1,1.3)
+                if i>0:
+                   mrip1_2_toPos, mrip1_2_tdPos=compareWithOriginal(data.iloc[indice],data.iloc[indice2],mrip1_2_toPos,mrip1_2_tdPos)                 
+            
+            elif data['MRIP'][indice]=="MRIP1_3":
+                mrip1_3_to, mrip1_3_td=calcDetection_Mrip1(data.iloc[indice],mrip1_3_to,mrip1_3_td,1.1,1.3)
+                if i>0:
+                   mrip1_3_toPos, mrip1_3_tdPos=compareWithOriginal(data.iloc[indice],data.iloc[indice2],mrip1_3_toPos,mrip1_3_tdPos)                 
+            
+            elif data['MRIP'][indice]=="MRIP2":
+                mrip2_to, mrip2_td=calcDetection_Mrip2(data.iloc[indice],mrip2_to,mrip2_td,1.1,0.3)
+                if i>0:
+                   mrip2_toPos, mrip2_tdPos=compareWithOriginal(data.iloc[indice],data.iloc[indice2],mrip2_toPos,mrip2_tdPos)                 
+            
+            elif data['MRIP'][indice]=="MRIP3":
+                mrip3_to, mrip3_td=calcDetection_Mrip3(data.iloc[indice],mrip3_to,mrip3_td,0.15,0.3)
+                if i>0:
+                   mrip3_toPos, mrip3_tdPos=compareWithOriginal(data.iloc[indice],data.iloc[indice2],mrip3_toPos,mrip3_tdPos)                 
+            
+            elif data['MRIP'][indice]=="MRIP4":
+                mrip4_to, mrip4_td=calcDetection_Mrip4(data.iloc[indice],mrip4_to,mrip4_td,0.1,0.3)
+                if i>0:
+                   mrip4_toPos, mrip4_tdPos=compareWithOriginal(data.iloc[indice],data.iloc[indice2],mrip4_toPos,mrip4_tdPos)                 
+            
     
     
-    result.loc[result['TestCase']==testCase , VerdictType]="PASS"
-    
-    return result
-        
+    results_To=results_To.append({"Mutant":caseStudies[i], "MRIP1_1":mrip1_1_to, "MRIP1_2":mrip1_2_to, "MRIP1_3":mrip1_3_to, "MRIP2":mrip2_to, "MRIP3":mrip3_to, "MRIP4":mrip4_to}, ignore_index=True)
+    results_Td=results_Td.append({"Mutant":caseStudies[i], "MRIP1_1":mrip1_1_td, "MRIP1_2":mrip1_2_td, "MRIP1_3":mrip1_3_td, "MRIP2":mrip2_td, "MRIP3":mrip3_td, "MRIP4":mrip4_td}, ignore_index=True)
+    results_ToPos=results_ToPos.append({"Mutant":caseStudies[i], "MRIP1_1":mrip1_1_toPos, "MRIP1_2":mrip1_2_toPos, "MRIP1_3":mrip1_3_toPos, "MRIP2":mrip2_toPos, "MRIP3":mrip3_toPos, "MRIP4":mrip4_toPos}, ignore_index=True)
+    results_TdPos=results_TdPos.append({"Mutant":caseStudies[i], "MRIP1_1":mrip1_1_tdPos, "MRIP1_2":mrip1_2_tdPos, "MRIP1_3":mrip1_3_tdPos, "MRIP2":mrip2_tdPos, "MRIP3":mrip3_tdPos, "MRIP4":mrip4_tdPos}, ignore_index=True)
 
-#Poner todos los falsos FAIL a PASS
-failures=pd.DataFrame({});
-for i in range(0,100):
-    
-    if result_1_1['TD Verdict'][i]=="FAIL":
-        result_1_1=changeVerdict(result_1_1,result_1_1['TestCase'][i], "TD Verdict")
-        result_1_1['TD Verdict'][i]="FAIL"
-    if result_1_1['TO Verdict'][i]=="FAIL":
-        result_1_1=changeVerdict(result_1_1,result_1_1['TestCase'][i], "TO Verdict")
-        result_1_1['TO Verdict'][i]="FAIL"
-    if result_1_2['TD Verdict'][i]=="FAIL":
-        result_1_2=changeVerdict(result_1_2,result_1_2['TestCase'][i], "TD Verdict")
-        result_1_2['TD Verdict'][i]="FAIL"
-    if result_1_2['TO Verdict'][i]=="FAIL":
-        result_1_2=changeVerdict(result_1_2,result_1_2['TestCase'][i], "TO Verdict")
-        result_1_2['TO Verdict'][i]="FAIL"
-    if result_1_3['TD Verdict'][i]=="FAIL":
-        result_1_3=changeVerdict(result_1_3,result_1_3['TestCase'][i], "TD Verdict")
-        result_1_3['TD Verdict'][i]="FAIL"
-    if result_1_3['TO Verdict'][i]=="FAIL":
-        result_1_3=changeVerdict(result_1_3,result_1_3['TestCase'][i], "TO Verdict")
-        result_1_3['TO Verdict'][i]="FAIL"
-    if result_2['TD Verdict'][i]=="FAIL":
-        result_2=changeVerdict(result_2,result_2['TestCase'][i], "TD Verdict")
-        result_2['TD Verdict'][i]="FAIL"
-    if result_2['TO Verdict'][i]=="FAIL":
-        result_2=changeVerdict(result_2,result_2['TestCase'][i], "TO Verdict")
-        result_2['TO Verdict'][i]="FAIL"
-    
-    if result_3['TD Verdict'][i]=="FAIL":
-        result_3=changeVerdict(result_3,result_3['TestCase'][i], "TD Verdict")
-        result_3['TD Verdict'][i]="FAIL"
-    if result_3['TO Verdict'][i]=="FAIL":
-        result_3=changeVerdict(result_3,result_3['TestCase'][i], "TO Verdict")
-        result_3['TO Verdict'][i]="FAIL"
-    
-    if result_4['TD Verdict'][i]=="FAIL":
-        result_4=changeVerdict(result_4,result_4['TestCase'][i], "TD Verdict")
-        result_4['TD Verdict'][i]="FAIL"
-    if result_4['TO Verdict'][i]=="FAIL":
-        result_4=changeVerdict(result_4,result_4['TestCase'][i], "TO Verdict")
-        result_4['TO Verdict'][i]="FAIL"
-    
-    
-a=0   
-def getMutantDetectionRate(result, verdict):
-    mutantDetectionTo=[]
-    mutantDetectionTd=[]
-    j=0
-    detectedTo=0
-    detectedTd=0
-    for i in range(0, len(result)):
-        if math.floor(i/nTest) > j:
-            j=j+1
-            mutantDetectionTo.append(detectedTo)
-            mutantDetectionTd.append(detectedTd)
-            detectedTo=0
-            detectedTd=0
-        if result['TO Verdict'][i]== verdict:
-            detectedTo=detectedTo+1
-        if result['TD Verdict'][i]== verdict:
-            detectedTd=detectedTd+1
-    mutantDetectionTo.append(detectedTo)
-    mutantDetectionTd.append(detectedTd)
-    return mutantDetectionTo, mutantDetectionTd
-#Sacar metricas de cada uno.
-resutl_1_1_FailuresTo, resutl_1_1_FailuresTd =getMutantDetectionRate(result_1_1,"FAIL")
-resutl_1_2_FailuresTo, resutl_1_2_FailuresTd =getMutantDetectionRate(result_1_2,"FAIL")
-resutl_1_3_FailuresTo, resutl_1_3_FailuresTd =getMutantDetectionRate(result_1_3,"FAIL")
-resutl_2_FailuresTo, resutl_2_FailuresTd =getMutantDetectionRate(result_2,"FAIL")
-resutl_3_FailuresTo, resutl_3_FailuresTd =getMutantDetectionRate(result_3,"FAIL")
-resutl_4_FailuresTo, resutl_4_FailuresTd =getMutantDetectionRate(result_4,"FAIL")
+results_To.to_excel(FILE_OUT, sheet_name="FAILURES_TO", index=False, header=False)
+with pd.ExcelWriter(FILE_OUT,engine="openpyxl" ,mode='a') as writer: 
+    results_Td.to_excel(writer, sheet_name="FAILURES_TD", index=False, header=False)
+    results_ToPos.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TO", index=False, header=False)
+    results_TdPos.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TD", index=False, header=False)      
 
-#FDR=Sumar todos los que tengan PASS-> Estos son los que pueden fallar
-resutl_1_1_PosFailuresTo, resutl_1_1_PosFailuresTd =getMutantDetectionRate(result_1_1_FDR,"PASS")
-resutl_1_2_PosFailuresTo, resutl_1_2_PosFailuresTd =getMutantDetectionRate(result_1_2_FDR,"PASS")
-resutl_1_3_PosFailuresTo, resutl_1_3_PosFailuresTd =getMutantDetectionRate(result_1_3_FDR,"PASS")
-resutl_2_PosFailuresTo, resutl_2_PosFailuresTd =getMutantDetectionRate(result_2_FDR,"PASS")
-resutl_3_PosFailuresTo, resutl_3_PosFailuresTd =getMutantDetectionRate(result_3_FDR,"PASS")
-resutl_4_PosFailuresTo, resutl_4_PosFailuresTd =getMutantDetectionRate(result_4_FDR,"PASS")
 
-resutl_1_1_FailuresTo.insert(0,"MRIP1_1")
-resutl_1_1_FailuresTd.insert(0,"MRIP1_1")
-resutl_1_1_PosFailuresTo.insert(0,"MRIP1_1")
-resutl_1_1_PosFailuresTd.insert(0,"MRIP1_1")
 
-resutl_1_2_FailuresTo.insert(0,"MRIP1_2")
-resutl_1_2_FailuresTd.insert(0,"MRIP1_2")
-resutl_1_2_PosFailuresTo.insert(0,"MRIP1_2")
-resutl_1_2_PosFailuresTd.insert(0,"MRIP1_2")
 
-resutl_1_3_FailuresTo.insert(0,"MRIP1_3")
-resutl_1_3_FailuresTd.insert(0,"MRIP1_3")
-resutl_1_3_PosFailuresTo.insert(0,"MRIP1_3")
-resutl_1_3_PosFailuresTd.insert(0,"MRIP1_3")
 
-resutl_2_FailuresTo.insert(0,"MRIP2")
-resutl_2_FailuresTd.insert(0,"MRIP2")
-resutl_2_PosFailuresTo.insert(0,"MRIP2")
-resutl_2_PosFailuresTd.insert(0,"MRIP2")
 
-resutl_3_FailuresTo.insert(0,"MRIP3")
-resutl_3_FailuresTd.insert(0,"MRIP3")
-resutl_3_PosFailuresTo.insert(0,"MRIP3")
-resutl_3_PosFailuresTd.insert(0,"MRIP3")
 
-resutl_4_FailuresTo.insert(0,"MRIP4")
-resutl_4_FailuresTd.insert(0,"MRIP4")
-resutl_4_PosFailuresTo.insert(0,"MRIP4")
-resutl_4_PosFailuresTd.insert(0,"MRIP4")
 
-names=["", "Original", "Mutant1", "Mutant2", "Mutant3", "Mutant4", "Mutant5", "Mutant6", "Mutant7"
-       , "Mutant8", "Mutant9", "Mutant10", "Mutant11", "Mutant12", "Mutant13", "Mutant14", "Mutant15"
-       , "Mutant16", "Mutant17", "Mutant18", "Mutant19", "Mutant20"]
-names1=["", "Mutant1", "Mutant2", "Mutant3", "Mutant4", "Mutant5", "Mutant6", "Mutant7"
-       , "Mutant8", "Mutant9", "Mutant10", "Mutant11", "Mutant12", "Mutant13", "Mutant14", "Mutant15"
-       , "Mutant16", "Mutant17", "Mutant18", "Mutant19", "Mutant20"]
-To= []
-To.append(names)
-To.append(resutl_1_1_FailuresTo)
-To.append(resutl_1_2_FailuresTo)
-To.append(resutl_1_3_FailuresTo)
-To.append(resutl_2_FailuresTo)
-To.append(resutl_3_FailuresTo)
-To.append(resutl_4_FailuresTo)
 
-Td= []
-Td.append(names)
-Td.append(resutl_1_1_FailuresTd)
-Td.append(resutl_1_2_FailuresTd)
-Td.append(resutl_1_3_FailuresTd)
-Td.append(resutl_2_FailuresTd)
-Td.append(resutl_3_FailuresTd)
-Td.append(resutl_4_FailuresTd)
 
-PossibleTo= []
-PossibleTo.append(names1)
-PossibleTo.append(resutl_1_1_PosFailuresTo)
-PossibleTo.append(resutl_1_2_PosFailuresTo)
-PossibleTo.append(resutl_1_3_PosFailuresTo)
-PossibleTo.append(resutl_2_PosFailuresTo)
-PossibleTo.append(resutl_3_PosFailuresTo)
-PossibleTo.append(resutl_4_PosFailuresTo)
 
-PossibleTd= []
-PossibleTd.append(names1)
-PossibleTd.append(resutl_1_1_PosFailuresTd)
-PossibleTd.append(resutl_1_2_PosFailuresTd)
-PossibleTd.append(resutl_1_3_PosFailuresTd)
-PossibleTd.append(resutl_2_PosFailuresTd)
-PossibleTd.append(resutl_3_PosFailuresTd)
-PossibleTd.append(resutl_4_PosFailuresTd)
-
-if FORMAT_OUT == 'xlsx':
-    pd.DataFrame(To).T.to_excel(FILE_OUT, sheet_name="FAILURES_TO", index=False, header=False)
-    with pd.ExcelWriter(FILE_OUT,engine="openpyxl" ,mode='a') as writer: 
-        pd.DataFrame(Td).T.to_excel(writer, sheet_name="FAILURES_TD", index=False, header=False)
-        pd.DataFrame(PossibleTo).T.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TO", index=False, header=False)
-        pd.DataFrame(PossibleTd).T.to_excel(writer, sheet_name="POSSIBLE_FAILURES_TD", index=False, header=False)
-else:
-    pd.DataFrame(To).T.to_csv(FILE_OUT.format(sheet_name='FAILURES_TO'), index=False, header=False)
-    pd.DataFrame(Td).T.to_csv(FILE_OUT.format(sheet_name='FAILURES_TD'), index=False, header=False)
-    pd.DataFrame(PossibleTo).T.to_csv(FILE_OUT.format(sheet_name='POSSIBLE_FAILURES_TO'), index=False, header=False)
-    pd.DataFrame(PossibleTd).T.to_csv(FILE_OUT.format(sheet_name='POSSIBLE_FAILURES_TD'), index=False, header=False)
