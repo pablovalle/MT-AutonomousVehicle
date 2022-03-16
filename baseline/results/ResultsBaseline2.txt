@@ -1,0 +1,6 @@
+DetectedFailures=6528/46240
+FPsCount=0
+MutantsKilledCount=18
+FPs=set()
+MutantsKilled={'Mutant_6_of_purePursuitUSCity', 'Mutant_20_of_purePursuitUSCity', 'Mutant_4_of_purePursuitUSCity', 'Mutant_7_of_purePursuitUSCity', 'Mutant_12_of_purePursuitUSCity', 'Mutant_5_of_purePursuitUSCity', 'Mutant_2_of_purePursuitUSCity', 'Mutant_13_of_purePursuitUSCity', 'Mutant_18_of_purePursuitUSCity', 'Mutant_19_of_purePursuitUSCity', 'Mutant_8_of_purePursuitUSCity', 'Mutant_9_of_purePursuitUSCity', 'Mutant_10_of_purePursuitUSCity', 'Mutant_16_of_purePursuitUSCity', 'Mutant_15_of_purePursuitUSCity', 'Mutant_17_of_purePursuitUSCity', 'Mutant_3_of_purePursuitUSCity', 'Mutant_1_of_purePursuitUSCity'}
+Skipped={'92:MRIP4', '92:MRIP1_3', '92:MRIP1_2', '78', '48:MRIP3', '95', '92:MRIP3', '48:MRIP1_3', '78:MRIP2', '92:MRIP2', '78:MRIP1_1', '78:MRIP1_3', '48:MRIP2', '48:MRIP4', '48:MRIP1_2', '78:MRIP4', '78:MRIP1_2', '92:MRIP1_1', '48', '95:MRIP3', '15:MRIP2', '48:MRIP1_1', '78:MRIP3', '92'}
