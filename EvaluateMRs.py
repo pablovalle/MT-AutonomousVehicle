@@ -9,7 +9,8 @@ METRICS = {
     'TTO': ['Balancing (Source)', 'Balancing (FollowUp)'],
 }
 
-EPSILON_TTD = .1
+EPSILON_TTO = .1
+
 THRESHOLD_TTD = .1
 THRESHOLD_TTD_MRIP3 = .15
 THRESHOLD_TTO = .3
@@ -25,21 +26,21 @@ def MRIP2(metric, source, followup, t):
     '''Additional obstacles'''
     return {
         'TTD': lambda: followup >= (source * (1.0 - THRESHOLD_TTD)), # followup >= source
-        'TTO': lambda: followup/t <= (source/t + EPSILON_TTD) * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
+        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
     }[metric]()
 
 def MRIP3(metric, source, followup, t):
     '''Reversed path'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD_TTD_MRIP3)) and followup >= (source * (1.0 - THRESHOLD_TTD_MRIP3)), # followup == source
-        'TTO': lambda: followup/t <= (source/t + EPSILON_TTD) * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
+        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
     }[metric]()
 
 def MRIP4(metric, source, followup, t):
     '''Fewer guidance points'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD_TTD)) and followup >= (source * (1.0 - THRESHOLD_TTD)), # followup == source
-        'TTO': lambda: followup/t <= (source/t + EPSILON_TTD) * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
+        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
     }[metric]()
 
 MRIPS = {
@@ -78,6 +79,9 @@ def evaluate_results(results):
                 t = results.loc[i, METRICS['TTD'][0]]
                 value_source = results.loc[i, METRICS[metric][0]]
                 value_followup = results.loc[i, METRICS[metric][1]]
+                if metric == 'TTO':
+                    value_source = max(value_source, EPSILON_TTO)
+                    value_followup = max(value_followup, EPSILON_TTO)
                 if not MRIPS[mrip](metric, value_source, value_followup, t):
                     if model == ORIGINAL_MODEL:
                         failures[metric][model][mrip] += 1
