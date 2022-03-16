@@ -13,7 +13,7 @@ EPSILON_TTO = .1
 
 THRESHOLD_TTD = .1
 THRESHOLD_TTD_MRIP3 = .15
-THRESHOLD_TTO = .3
+THRESHOLD_TTO = .15
 
 def MRIP1(metric, source, followup, t):
     '''Faster vehicles'''
@@ -40,7 +40,7 @@ def MRIP4(metric, source, followup, t):
     '''Fewer guidance points'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD_TTD)) and followup >= (source * (1.0 - THRESHOLD_TTD)), # followup == source
-        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
+        'TTO': lambda: followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup >= source
     }[metric]()
 
 MRIPS = {
