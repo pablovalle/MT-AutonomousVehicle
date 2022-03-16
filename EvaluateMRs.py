@@ -11,36 +11,34 @@ METRICS = {
 
 EPSILON_TTO = .1
 
-THRESHOLD_TTD = .1
-THRESHOLD_TTD_MRIP3 = .15
-THRESHOLD_TTO = .15
+THRESHOLD = .15
 
 def MRIP1(metric, source, followup, t):
     '''Faster vehicles'''
     return {
-        'TTD': lambda: followup <= (source * (1.0 + THRESHOLD_TTD)), # followup <= source
-        'TTO': lambda: followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup >= source
+        'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)), # followup <= source
+        'TTO': lambda: followup/t >= (source/t * (1.0 - THRESHOLD)), # followup >= source
     }[metric]()
 
 def MRIP2(metric, source, followup, t):
     '''Additional obstacles'''
     return {
-        'TTD': lambda: followup >= (source * (1.0 - THRESHOLD_TTD)), # followup >= source
-        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
+        'TTD': lambda: followup >= (source * (1.0 - THRESHOLD)), # followup >= source
+        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD) and followup/t >= (source/t * (1.0 - THRESHOLD)), # followup == source
     }[metric]()
 
 def MRIP3(metric, source, followup, t):
     '''Reversed path'''
     return {
-        'TTD': lambda: followup <= (source * (1.0 + THRESHOLD_TTD_MRIP3)) and followup >= (source * (1.0 - THRESHOLD_TTD_MRIP3)), # followup == source
-        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD_TTO) and followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup == source
+        'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
+        'TTO': lambda: followup/t <= source/t * 2.0 and followup/t >= (source/t * .5), # 1/2 <= followup/source <= 2
     }[metric]()
 
 def MRIP4(metric, source, followup, t):
     '''Fewer guidance points'''
     return {
-        'TTD': lambda: followup <= (source * (1.0 + THRESHOLD_TTD)) and followup >= (source * (1.0 - THRESHOLD_TTD)), # followup == source
-        'TTO': lambda: followup/t >= (source/t * (1.0 - THRESHOLD_TTO)), # followup >= source
+        'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
+        'TTO': lambda: followup/t <= source/t * 2.0 and followup/t >= (source/t * .5), # 1/2 <= followup/source <= 2
     }[metric]()
 
 MRIPS = {
