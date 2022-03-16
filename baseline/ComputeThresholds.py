@@ -15,8 +15,11 @@ def compute_thresholds(results, test_distances):
     for i in range(len(results)):
         model = results.loc[i, "Model"]
         if model == ORIGINAL_MODEL:
+            mrip = 'followup'
+            if "MRIP" in results.columns:
+                mrip = results.loc[i, "MRIP"]
             source = str(int(results.loc[i, "Test Case"]))
-            followup = f'{source}:{results.loc[i, "MRIP"]}'
+            followup = f'{source}:{mrip}'
             distance = test_distances[source]
             for threshold_key in THRESHOLD_KEYS:
                 for test_num, results_col in enumerate(THRESHOLD_KEYS[threshold_key]):
