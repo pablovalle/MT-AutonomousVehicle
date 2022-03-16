@@ -8,7 +8,7 @@ rng(2);
 
 %% Source test generation
 disp('Generating source test cases...')
-nTest = 20; %Number of test cases to generate
+nTest = 1300; %Number of test cases to generate
 sourceTestSuite = generateTestCasesRandomly(nTest);
 
 disp('Saving test suites...')
