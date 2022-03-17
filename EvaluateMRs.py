@@ -13,32 +13,32 @@ EPSILON_TTO = .1
 
 THRESHOLD = .15
 
-def MRIP1(metric, source, followup, t):
+def MRIP1(metric, source, followup):
     '''Faster vehicles'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)), # followup <= source
-        'TTO': lambda: followup/t >= (source/t * (1.0 - THRESHOLD)), # followup >= source
+        'TTO': lambda: followup >= (source * (1.0 - THRESHOLD)), # followup >= source
     }[metric]()
 
-def MRIP2(metric, source, followup, t):
+def MRIP2(metric, source, followup):
     '''Additional obstacles'''
     return {
         'TTD': lambda: followup >= (source * (1.0 - THRESHOLD)), # followup >= source
-        'TTO': lambda: followup/t <= source/t * (1.0 + THRESHOLD) and followup/t >= (source/t * (1.0 - THRESHOLD)), # followup == source
+        'TTO': lambda: followup <= source * (1.0 + THRESHOLD) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
     }[metric]()
 
-def MRIP3(metric, source, followup, t):
+def MRIP3(metric, source, followup):
     '''Reversed path'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
-        'TTO': lambda: followup/t <= source/t * 2.0 and followup/t >= (source/t * .5), # 1/2 <= followup/source <= 2
+        'TTO': lambda: followup <= source * 2.0 and followup >= (source * .5), # 1/2 <= followup/source <= 2
     }[metric]()
 
-def MRIP4(metric, source, followup, t):
+def MRIP4(metric, source, followup):
     '''Fewer guidance points'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
-        'TTO': lambda: followup/t <= source/t * 2.0 and followup/t >= (source/t * .5), # 1/2 <= followup/source <= 2
+        'TTO': lambda: followup <= source * 2.0 and followup >= (source * .5), # 1/2 <= followup/source <= 2
     }[metric]()
 
 MRIPS = {
@@ -74,13 +74,12 @@ def evaluate_results(results):
                 skipped.add(followup)
                 continue
             for metric in METRICS:
-                t = results.loc[i, METRICS['TTD'][0]]
                 value_source = results.loc[i, METRICS[metric][0]]
                 value_followup = results.loc[i, METRICS[metric][1]]
                 if metric == 'TTO':
                     value_source = max(value_source, EPSILON_TTO)
                     value_followup = max(value_followup, EPSILON_TTO)
-                if not MRIPS[mrip](metric, value_source, value_followup, t):
+                if not MRIPS[mrip](metric, value_source, value_followup):
                     if model == ORIGINAL_MODEL:
                         failures[metric][model][mrip] += 1
                         false_positives.add(followup)
