@@ -46,3 +46,4 @@ The evaluation results presented in the paper (`Results/Evaluation*`) are based 
 * The `functions` directory includes the functions needed by the Matlab scripts.
 * The `data` directory includes some data needed to run the experiments.
 * The `Results` directory includes al the intermediate and final experimental data, so that the expensive simulation and other steps can be skipped.
+* The `baseline` directory includes the scripts and data for the baseline (threshold-based oracle) experiments.
