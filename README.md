@@ -7,11 +7,11 @@ These experiments are based on an open source autonomous vehicle model published
 1. Install the [requirements](#requirements) for the [simulation](#simulation) and the [evaluation script](#evaluation-script).
 2. Run `GENERATE_TESTSUITE.m` (Can be skipped by copying `Results/testSuite.mat` to the project's root directory).
 3. Run `METAMORPHIC_TESTING_EXPERIMENT_MAIN.m` ([It takes a while](#experiment-runtime), can be skipped by copying `Results/ExperimentResults.csv` to the project's root directory).
-4. Run `CompileEvaluationResults.py` (Should produce results similar to `Results/Evaluation_*.csv`).
+4. Run `EvaluateMRs.py .\results\Experiment_Results.xlsx EvaluationNew.xlsx` (Should produce results similar to `Results/EvaluationNew.xlsx`).
 
 `ExperimentResults.*` contains all the simulation results. By default we use the CSV format, but XLSX can also be used by tweaking `METAMORPHIC_TESTING_EXPERIMENT_MAIN.m` a bit.
 
-`Evaluation*` contains the failures for each mutant (and the original) and metamorphic test, as well as the number of possible metamorphic test failures. With this data, the false positives, mutation score, and failure detection ratio can be calculated. The evaluation results consist of 4 workbooks, so they can only be stored in a single file if the XLSX format is used (`Evaluation.xlsx`), and for CSV, the workbooks are written into 4 different `Evaluation_*.csv` files instead.
+`Evaluation*` contains the failures for each mutant (and the original) and metamorphic test, as well as the number of possible metamorphic test failures. With this data, the false positives, mutation score, and failure detection ratio can be calculated. The evaluation results consist of 2 workbooks, so they can only be stored in a single file if the XLSX format is used (`Evaluation.xlsx`), and for CSV, the workbooks are written into 2 different `Evaluation_*.csv` files instead.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ Under the **3_USCity** section.
 Our experimental setup does not require the 3D visualization environment, so the GPU requirement can be ignored. The simulations have also been successfuly run on a machine with only 8GB of available RAM.
 
 ### Evaluation script
-The final results are compiled by the `CompileEvaluationResults.py` script, which requires (tested under Windows 10):
+The final results are compiled by the `EvaluateMRs.py` script, which requires (tested under Windows 10):
 * **Python 3** (`CPython 3.7.0`)
 * **pandas** (`pip install pandas==1.1.5`)
 * **(Optional) openpyxl** (`pip install openpyxl==3.0.9`) (For reading and/or writing XLSX files, but CSV can be used instead)
