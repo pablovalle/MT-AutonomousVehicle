@@ -31,14 +31,14 @@ def MRIP3(metric, source, followup):
     '''Reversed path'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
-        'TTO': lambda: followup <= source * 2.0 and followup >= (source * .5), # 1/2 <= followup/source <= 2
+        'TTO': lambda: followup <= source * (1.0 + .5) and followup >= (source * (1.0 - .5)), # followup == source
     }[metric]()
 
 def MRIP4(metric, source, followup):
     '''Fewer guidance points'''
     return {
         'TTD': lambda: followup <= (source * (1.0 + THRESHOLD)) and followup >= (source * (1.0 - THRESHOLD)), # followup == source
-        'TTO': lambda: followup <= source * 2.0 and followup >= (source * .5), # 1/2 <= followup/source <= 2
+        'TTO': lambda: followup <= source * (1.0 + .5) and followup >= (source * (1.0 - .5)), # followup == source
     }[metric]()
 
 MRIPS = {
